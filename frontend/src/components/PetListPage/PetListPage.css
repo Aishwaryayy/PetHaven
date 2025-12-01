@@ -1,0 +1,14 @@
+.card-container{
+    height:100%;
+
+}
+.card-media{
+object-fit:cover;
+
+}
+.card-content{
+    display:flex;
+    flex-direction:column;
+
+
+}
