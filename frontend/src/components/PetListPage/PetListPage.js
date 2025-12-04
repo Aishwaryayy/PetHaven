@@ -1,5 +1,6 @@
 import React from "react";
 import {useState, useEffect} from "react";
+import {Link} from "react-router-dom";
 import Header from '../Header/Header.js';
 import PageLayout from '../PageLayout/PageLayout.js';
 import Box from '@mui/material/Box';
@@ -57,7 +58,6 @@ function PetListPage(){
 
                   <TextField label="Age" fullWidth value={age} onChange={(e) => setAge(e.target.value)} />
 
-
                   <TextField select label="Gender" fullWidth
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}>
@@ -72,9 +72,10 @@ function PetListPage(){
                 <Box className="right-container">
                 <Grid container spacing={3} alignItems="stretch">
                    {filteredPets.map((pet) => (
-                     <Grid item xs={12} sm={6} md={4} key={pet.id} style={{ display: 'flex' }}>
+                     <Grid item xs={12} sm={6} md={4} key={pet.id} >
+                     <Link to={`/listings/${pet.id}`} className="details-link">
                        <Card className="card-container">
-                         <CardMedia component="img" height="180" image={pet.thumbnail} alt={pet.name}
+                         <CardMedia component="img" height="180" image={pet.photos[0]} alt={pet.name}
                            className="card-media"/>
 
                          <CardContent>
@@ -98,6 +99,7 @@ function PetListPage(){
                            </Stack>
                          </CardContent>
                        </Card>
+                       </Link>
                      </Grid>
                    ))}
                    </Grid>

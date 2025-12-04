@@ -40,3 +40,9 @@ height:20vh;
 .right-container {
     flex: 1;
 }
+.card-container{
+    display:flex;
+}
+.details-link{
+    text-decoration:none;
+}
