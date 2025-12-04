@@ -1,14 +1,42 @@
 .card-container{
     height:100%;
-
+    width:100%;
+    display:flex;
+    flex-direction:column;
 }
 .card-media{
 object-fit:cover;
-
+height:20vh;
 }
 .card-content{
     display:flex;
     flex-direction:column;
+    flex:1;
+    justify-content:space-between;
+    word-wrap:break-word;
+}
+.filter-box-container{
+    border-style:solid;
+    position:sticky;
+    height:30vh;
+
+    background-color:white;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-evenly;
+    padding:5%;
+    width:100%;
+}
+.left-container{
+    width:20%;
+
+}
+.listing-container{
+    display:flex;
+    gap:5%;
 
 
+}
+.right-container {
+    flex: 1;
 }

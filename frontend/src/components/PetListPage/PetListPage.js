@@ -14,9 +14,15 @@ import Chip from '@mui/material/Chip';
 import './PetListPage.css';
 import { GoDotFill } from "react-icons/go";
 import { FaLocationDot } from "react-icons/fa6";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+
 
 function PetListPage(){
     const [petList, setPetList] = useState([]);
+    const [breed, setBreed] = useState("");
+    const [age, setAge] = useState("");
+    const [gender, setGender] = useState("");
     useEffect(()=>{
         fetch("http://localhost:4000/pets").then(res=>res.json()).then(data=>{
             setPetList(data);
@@ -28,12 +34,45 @@ function PetListPage(){
 
 
     },[]);
+    const filteredPets = petList.filter((pet) => {
+      const matchesBreed =breed === "" || pet.breed.toLowerCase().includes(breed.toLowerCase());
+      const matchesAge = age === "" || pet.age.toString() === age;
+
+      const matchesGender = gender === "" || pet.gender === gender;
+      return matchesBreed && matchesAge && matchesGender;
+    });
+
     return(
 
         <PageLayout>
-             <Grid container spacing={3}>
-                   {petList.map((pet) => (
-                     <Grid item xs={12} key={pet.id}>
+             <Stack direction="row" className="listing-container">
+                <Stack spacing={3} className="left-container">
+                <Box className="filter-box-container">
+            <Typography variant="h6" fontWeight="bold">
+              Filters
+            </Typography>
+
+                  <TextField label="Breed" fullWidth value={breed} onChange={(e) => setBreed(e.target.value)}/>
+
+
+                  <TextField label="Age" fullWidth value={age} onChange={(e) => setAge(e.target.value)} />
+
+
+                  <TextField select label="Gender" fullWidth
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}>
+                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="Male">Male</MenuItem>
+                    <MenuItem value="Female">Female</MenuItem>
+                  </TextField>
+
+
+                </Box>
+                </Stack>
+                <Box className="right-container">
+                <Grid container spacing={3} alignItems="stretch">
+                   {filteredPets.map((pet) => (
+                     <Grid item xs={12} sm={6} md={4} key={pet.id} style={{ display: 'flex' }}>
                        <Card className="card-container">
                          <CardMedia component="img" height="180" image={pet.thumbnail} alt={pet.name}
                            className="card-media"/>
@@ -45,7 +84,6 @@ function PetListPage(){
                            <Typography variant="body2" color="text.secondary">
                              {pet.breed} <GoDotFill/> {pet.age} yrs <GoDotFill/> {pet.gender}
                            </Typography>
-
 
                            <Typography variant="body2" color="text.secondary">
                            <FaLocationDot />
@@ -62,7 +100,9 @@ function PetListPage(){
                        </Card>
                      </Grid>
                    ))}
-                 </Grid>
+                   </Grid>
+                   </Box>
+                 </Stack>
         </PageLayout>
 
     );
