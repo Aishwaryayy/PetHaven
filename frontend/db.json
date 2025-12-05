@@ -408,5 +408,40 @@
     }
   ],
 
-  "applications": []
+  "applications": [
+    {
+    "id": "a_3001",
+    "petId": "p_2001",
+    "userId": "u_5001",
+    "status": "pending",
+    "dateApplied": "2025-02-01T14:00:00Z"
+  },
+    {
+      "id": "a_3002",
+      "petId": "p_2004",
+      "userId": "u_5001",
+      "status": "approved",
+      "dateApplied": "2025-02-03T09:30:00Z"
+    },
+    {
+      "id": "a_3003",
+      "petId": "p_2007",
+      "userId": "u_5001",
+      "status": "rejected",
+      "dateApplied": "2025-02-05T16:20:00Z"
+    },
+    {
+      "id": "a_3004",
+      "petId": "p_2010",
+      "userId": "u_5001",
+      "status": "pending",
+      "dateApplied": "2025-02-06T11:45:00Z"
+    },
+    {
+      "id": "a_3005",
+      "petId": "p_2015",
+      "userId": "u_5001",
+      "status": "pending",
+      "dateApplied": "2025-02-07T10:15:00Z"
+    }]
 }

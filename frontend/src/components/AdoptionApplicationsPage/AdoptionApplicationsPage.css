@@ -1,0 +1,15 @@
+.view-button{
+    background-color:#271C45 !important;
+    color:white !important;
+
+}
+.issue-button{
+    background-color:#271C45 !important;
+    color:white !important;
+
+}
+.details-container{
+    display:flex;
+    flex-direction:column;
+
+}

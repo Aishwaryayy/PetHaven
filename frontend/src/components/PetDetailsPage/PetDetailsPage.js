@@ -59,7 +59,7 @@ function PetDetailsPage(){
                     </SwiperSlide>
                   ))} </Swiper>
                 <Paper elevation={4} className="info-container">
-                    <Typography variant="h6">Hello, I'm {currPet.name}!</Typography>
+                    <Typography variant="h5">Hello, I'm {currPet.name}!</Typography>
                     <Typography variant="body1">I am a {currPet.age}-year old {currPet.gender} {currPet.breed}. I'm from {currPet.location}. Thank you for checking out my profile! :)</Typography>
                     <Typography variant="body2"><strong>Summary: </strong>{currPet.profile.summary}</Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap">

@@ -49,7 +49,7 @@ function PetListPage(){
              <Stack direction="row" className="listing-container">
                 <Stack spacing={3} className="left-container">
                 <Box className="filter-box-container">
-            <Typography variant="h6" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold">
               Filters
             </Typography>
 
@@ -80,7 +80,7 @@ function PetListPage(){
 
                          <CardContent>
                            <Stack direction="column" spacing={2}>
-                           <Typography variant="h6" fontWeight="bold"> {pet.name} </Typography>
+                           <Typography variant="h5" fontWeight="bold"> {pet.name} </Typography>
 
                            <Typography variant="body2" color="text.secondary">
                              {pet.breed} <GoDotFill/> {pet.age} yrs <GoDotFill/> {pet.gender}
