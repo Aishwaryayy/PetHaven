@@ -26,8 +26,8 @@ module.exports = (router) => {
             pet.availability = req.body.availability || 'available';
             pet.datePosted = req.body.datePosted || new Date();
             pet.save((err) => {
-                if (err) res.send(err);
-                res.json({ message: 'Pet created!', pet: pet });
+                if (err) return res.status(400).send(err);
+                res.status(201).json({ message: 'Pet created!', pet: pet });
             });
         });
     
@@ -35,8 +35,8 @@ module.exports = (router) => {
     router.route('/pets')
         .get((req, res) => {
             Pet.find((err, pets) => {
-                if (err) res.send(err);
-                res.json(pets);
+                if (err) return res.status(500).send(err);
+                res.status(200).json(pets);
             });
         });
     
@@ -44,8 +44,8 @@ module.exports = (router) => {
     router.route('/pets/shelter/:shelterId')
         .get((req, res) => {
             Pet.find({ shelterId: req.params.shelterId }, (err, pets) => {
-                if (err) res.send(err);
-                res.json(pets);
+                if (err) return res.status(500).send(err);
+                res.status(200).json(pets);
             });
         });
     
@@ -53,9 +53,9 @@ module.exports = (router) => {
     router.route('/pets/:id')
         .get((req, res) => {
             Pet.findOne({ id: req.params.id }, (err, pet) => {
-                if (err) res.send(err);
+                if (err) return res.status(500).send(err);
                 if (!pet) return res.status(404).json({ message: 'Pet not found' });
-                res.json(pet);
+                res.status(200).json(pet);
             });
         });
     
@@ -63,7 +63,7 @@ module.exports = (router) => {
     router.route('/pets/:id')
         .put((req, res) => {
             Pet.findOne({ id: req.params.id }, (err, pet) => {
-                if (err) res.send(err);
+                if (err) return res.status(500).send(err);
                 if (!pet) return res.status(404).json({ message: 'Pet not found' });
                 
                 pet.name = req.body.name || pet.name;
@@ -86,8 +86,8 @@ module.exports = (router) => {
                 if (req.body.availability !== undefined) pet.availability = req.body.availability;
                 
                 pet.save((err) => {
-                    if (err) res.send(err);
-                    res.json({ message: 'Pet updated!', pet: pet });
+                    if (err) return res.status(400).send(err);
+                    res.status(200).json({ message: 'Pet updated!', pet: pet });
                 });
             });
         });
@@ -96,8 +96,8 @@ module.exports = (router) => {
     router.route('/pets/:id')
         .delete((req, res) => {
             Pet.remove({ id: req.params.id }, (err) => {
-                if (err) res.send(err);
-                res.json({ message: 'Pet deleted!' });
+                if (err) return res.status(500).send(err);
+                res.status(200).json({ message: 'Pet deleted!' });
             });
         });
     
