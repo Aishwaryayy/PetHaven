@@ -50,7 +50,7 @@ function UserProfilePage() {
     if (!user) return <PageLayout><Typography>Loading...</Typography></PageLayout>;
 
     const handleSave = () => {
-        fetch(`http://localhost:4000/users/${curr_id}`, {
+        fetch(`https://pethaven-z4jb.onrender.com/users/${curr_id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
