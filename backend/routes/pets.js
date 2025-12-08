@@ -49,7 +49,43 @@ module.exports = (router) => {
     router.route('/pets')
         .get(async (req, res) => {
             try {
-                const pets = await Pet.find(); 
+                const query = {};
+                const preferences = req.body?.preferences || {};
+
+                // Filter by breed (array of breeds - match any)
+                if (preferences.breed && Array.isArray(preferences.breed) && preferences.breed.length > 0) {
+                    query.breed = { $in: preferences.breed };
+                }
+
+                // Filter by age range [min, max]
+                if (preferences.ageRange && Array.isArray(preferences.ageRange) && preferences.ageRange.length === 2) {
+                    const [minAge, maxAge] = preferences.ageRange;
+                    if (typeof minAge === 'number' && typeof maxAge === 'number') {
+                        query.age = { $gte: minAge, $lte: maxAge };
+                    }
+                }
+
+                // Filter by gender (skip if empty string)
+                if (preferences.gender && preferences.gender.trim() !== '') {
+                    query.gender = preferences.gender;
+                }
+
+                // Filter by size (skip if empty string)
+                if (preferences.size && preferences.size.trim() !== '') {
+                    query.size = preferences.size;
+                }
+
+                // Filter by location
+                if (preferences.location && preferences.location.trim() !== '') {
+                    query.location = preferences.location;
+                }
+
+                // Filter by traits (array of traits - match any in personalityTraits)
+                if (preferences.traits && Array.isArray(preferences.traits) && preferences.traits.length > 0) {
+                    query['profile.personalityTraits'] = { $in: preferences.traits };
+                }
+
+                const pets = await Pet.find(query); 
                 res.status(200).json(pets);
             } catch (err) {
                 console.error(err);
