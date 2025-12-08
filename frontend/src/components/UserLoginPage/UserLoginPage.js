@@ -1,8 +1,10 @@
 import React,{useState} from "react";
 import PageLayout from "../PageLayout/PageLayout";
 import "./UserLoginPage.css";
+import {useNavigate} from "react-router-dom";
 
 export default function UserLoginPage() {
+  const navigate = useNavigate();
   const [mode,setMode]=useState("login");
   const [role,setRole]=useState("adopter");
   const [form,setForm]=useState({
@@ -22,11 +24,11 @@ export default function UserLoginPage() {
   const handleSubmit=async()=>{
     let endpoint="";
     if(mode==="register"){
-      if(role==="adopter") endpoint="http://localhost:4000/users/adopterUsers/register";
-      else endpoint="http://localhost:4000/users/shelterUsers/register";
+      if(role==="adopter") endpoint=`${process.env.REACT_APP_API_URL}/adopterUsers/register`;
+      else endpoint=`${process.env.REACT_APP_API_URL}/shelterUsers/register`;
     }else{
-      if(role==="adopter") endpoint="http://localhost:4000/users/adopterUsers/login";
-      else endpoint="http://localhost:4000/users/shelterUsers/login";
+      if(role==="adopter") endpoint=`${process.env.REACT_APP_API_URL}/adopterUsers/login`;
+      else endpoint=`${process.env.REACT_APP_API_URL}/shelterUsers/login`;
     }
 
     const body=
@@ -57,9 +59,16 @@ export default function UserLoginPage() {
       });
       const data=await res.json();
       if(res.ok && data.token){
+        localStorage.setItem("userId", data.user._id);
         localStorage.setItem("token",data.token);
       }
-      alert(data.message);
+      if(role==="adopter"){
+        navigate("/preferences");
+      }
+      else {
+        navigate(`/shelter/${data.user._id}/listings`);
+      }
+     alert(data.message);
     }catch(err){
       console.error("Fetch error:",err);
       alert("Error connecting to server");

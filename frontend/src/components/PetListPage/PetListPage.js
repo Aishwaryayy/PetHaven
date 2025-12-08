@@ -17,24 +17,34 @@ import { GoDotFill } from "react-icons/go";
 import { FaLocationDot } from "react-icons/fa6";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
-
+import { useLocation } from "react-router-dom";
 
 function PetListPage(){
+    const location = useLocation();
     const [petList, setPetList] = useState([]);
     const [breed, setBreed] = useState("");
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
+    const preferences = location.state?.preferences || {};
     useEffect(()=>{
-        fetch("http://localhost:4000/pets").then(res=>res.json()).then(data=>{
-            setPetList(data);
-            console.log("Pet list:");
-            console.log(data);
+       const fetchPets = async () => {
+             try {
+               const res = await fetch(`${process.env.REACT_APP_API_URL}/pets`, {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+                 body: JSON.stringify(preferences)
+               });
+               const data = await res.json();
+               setPetList(data);
+             } catch (err) {
+               console.error("Error fetching pets:", err);
+             }
+           };
+           fetchPets();
 
-        })
 
 
-
-    },[]);
+    },[preferences]);
     const filteredPets = petList.filter((pet) => {
       const matchesBreed =breed === "" || pet.breed.toLowerCase().includes(breed.toLowerCase());
       const matchesAge = age === "" || pet.age.toString() === age;

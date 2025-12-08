@@ -10,6 +10,7 @@ import NewPetListingPage from './components/NewPetListingPage/NewPetListingPage.
 import UserLoginPage from './components/UserLoginPage/UserLoginPage.js';
 import ShelterListingsPage from './components/ShelterListingsPage/ShelterListingsPage.js';
 import Typography from '@mui/material/Typography';
+import {Navigate} from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
@@ -41,6 +42,7 @@ function App() {
     <ThemeProvider theme={theme}>
     <Router>
     <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/listings" element={<PetListPage />}  />
         <Route path="/listings/:curr_id" element={<PetDetailsPage />}  />
         <Route path="/preferences" element={<UserPreferencePage />}  />

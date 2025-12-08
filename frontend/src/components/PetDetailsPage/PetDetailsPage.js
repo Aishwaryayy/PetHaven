@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import Header from '../Header/Header.js';
 import PageLayout from '../PageLayout/PageLayout.js';
 import Box from '@mui/material/Box';
@@ -25,6 +25,7 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 function PetDetailsPage(){
     const {curr_id} = useParams();
+    const navigate = useNavigate();
     const [currPet, setCurrPet] = useState("");
     useEffect(()=>{
         fetch(`http://localhost:4000/pets/${curr_id}`).then(res=>res.json()).then(data=>{
@@ -36,6 +37,37 @@ function PetDetailsPage(){
 
 
     },[]);
+    const handleAdopt = async () => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          alert("Please login first!");
+          return;
+        }
+
+        try {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/applications`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({
+              petId: currPet.id,
+              userId
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            alert("Application submitted successfully!");
+             navigate("/listings");
+          } else {
+            alert(data.message || "Failed to submit application.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error connecting to server.");
+        }
+      };
     if(!currPet){
 
         return (
@@ -72,9 +104,9 @@ function PetDetailsPage(){
                     <Typography variant="body2"><strong>Size:</strong> {currPet.size}</Typography>
                     <Typography variant="body2"><strong>Routine:</strong> {currPet.profile.routine}</Typography>
                     <Typography variant="body2"><strong>Good With Children:</strong>{currPet.profile.goodWithChildren ? "Yes":"No"}</Typography>
-                    <Typography variant="body2"><strong>Good With Dogs:</strong>{currPet.profile.goodWithDogs ? "Yes":"No"}</Typography>
-                    <Typography variant="body2"><strong>Good With Cats:</strong>{currPet.profile.goodWithCats ? "Yes":"No"}</Typography>
-                    <Button className="adopt-button">ADOPT ME!</Button>
+                    <Typography variant="body2"><strong>Good With Dogs:</strong>{currPet.profile.goodWithDogs?"Yes":"No"}</Typography>
+                    <Typography variant="body2"><strong>Good With Cats:</strong>{currPet.profile.goodWithCats?"Yes":"No"}</Typography>
+                    <Button className="adopt-button" onClick={handleAdopt}>ADOPT ME!</Button>
 
                 </Paper>
             </Stack>
