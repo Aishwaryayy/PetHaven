@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from "react";
-import {Link,useParams} from "react-router-dom";
+import {Link,useParams,useNavigate} from "react-router-dom";
 import Header from '../Header/Header.js';
 import PageLayout from '../PageLayout/PageLayout.js';
 import Box from '@mui/material/Box';
@@ -16,16 +16,17 @@ import { GoDotFill } from "react-icons/go";
 import { FaLocationDot } from "react-icons/fa6";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
-
+import Button from "@mui/material/Button";
 function ShelterListingsPage(){
     const {curr_id} = useParams();
+    const navigate = useNavigate();
     const [petList, setPetList] = useState([]);
     const [breed, setBreed] = useState("");
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
 
     useEffect(()=>{
-        fetch(`http://localhost:4000/pets/shelter/${curr_id}`)
+        fetch(`${process.env.REACT_APP_API_URL}/pets?shelterId=${curr_id}`)
           .then(res=>res.json())
           .then(data=>{
             setPetList(data);
@@ -63,6 +64,25 @@ function ShelterListingsPage(){
                 </Stack>
 
                 <Box className="right-container">
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="h5">My Pets</Typography>
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => navigate(`/shelter/${curr_id}/add_listings`)}
+                    >
+                      Add New Listing
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => navigate(`/applications/${curr_id}`)}
+                    >
+                      View Applications
+                    </Button>
+                  </Stack>
+                </Box>
                 <Grid container spacing={3} alignItems="stretch">
                    {filteredPets.map((pet) => (
                      <Grid item xs={12} sm={6} md={4} key={pet.id} >

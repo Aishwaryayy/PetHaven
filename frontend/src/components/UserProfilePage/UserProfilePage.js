@@ -39,7 +39,7 @@ function UserProfilePage() {
     const [formData, setFormData] = useState({});
 
     useEffect(() => {
-        fetch(`http://localhost:4000/users/${curr_id}`)
+        fetch(`${process.env.REACT_APP_API_URL}/users/${curr_id}`)
           .then((res) => res.json())
           .then((data) => {
             setUser(data);

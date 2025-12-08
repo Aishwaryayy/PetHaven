@@ -23,9 +23,9 @@ import Select from '@mui/material/Select';
 import Input from '@mui/material/Input';
 import Autocomplete from "@mui/material/Autocomplete";
 import Slider from "@mui/material/Slider";
-
+import {useNavigate} from "react-router-dom";
 function UserPreferencePage() {
-
+  const navigate=useNavigate();
   const personalityOptions = [
     "Playful",
     "Loyal",
@@ -87,6 +87,9 @@ function UserPreferencePage() {
           : [...prev.traits, trait]
       }));
     };
+    const handleSubmit = () => {
+        navigate("/listings", { state: { preferences } });
+      };
   return (
    <PageLayout>
         <Box class="form-container">
@@ -122,7 +125,7 @@ function UserPreferencePage() {
                 ))}
               </Stack>
             </div>
-            <Button className="submit-button">Submit Preferences</Button>
+            <Button className="submit-button" onClick={handleSubmit}>Submit Preferences</Button>
         </Box>
     </PageLayout>
   );
