@@ -1,5 +1,20 @@
-var AdopterUser = require('../models/adopterUser') 
-var ShelterUser = require('../models/shelterUser')
+var AdopterUser = require('../models/adopterUser'); 
+var ShelterUser = require('../models/shelterUser');
+var jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'pethaven';
+
+// Simple JWT verification middleware
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    if (!token) return res.status(401).json({ message: 'Authorization token missing' });
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ message: 'Invalid token' });
+        req.user = decoded.id;
+        return next();
+    });
+};
 
 module.exports = (router) => {
     router.route('/adopterUsers/register')
@@ -12,7 +27,8 @@ module.exports = (router) => {
             adopterUser.password = req.body.password;
             adopterUser.save((err) => {
                 if (err) return res.status(400).send(err);
-                res.status(201).json({ message: 'Adopter user created!', user: adopterUser });
+                const token = jwt.sign({ id: adopterUser._id }, JWT_SECRET, { expiresIn: '24h' });
+                res.status(201).json({ message: 'Adopter user created!', user: adopterUser, token });
             });
         });
     
@@ -24,12 +40,13 @@ module.exports = (router) => {
                 if (user.password !== req.body.password) {
                     return res.status(401).json({ message: 'Invalid password' });
                 }
-                res.status(200).json({ message: 'Login successful', user: user });
+                const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '24h' });
+                res.status(200).json({ message: 'Login successful', user: user, token });
             });
         });
     
     router.route('/adopterUsers')
-        .get((req, res) => {
+        .get(verifyToken, (req, res) => {
             AdopterUser.find((err, users) => {
                 if (err) return res.status(500).send(err);
                 res.status(200).json(users);
@@ -37,7 +54,7 @@ module.exports = (router) => {
         });
     
     router.route('/adopterUsers/:id')
-        .get((req, res) => {
+        .get(verifyToken, (req, res) => {
             AdopterUser.findById(req.params.id, (err, user) => {
                 if (err) return res.status(500).send(err);
                 if (!user) return res.status(404).json({ message: 'User not found' });
@@ -46,7 +63,7 @@ module.exports = (router) => {
         });
     
     router.route('/adopterUsers/:id')
-        .put((req, res) => {
+        .put(verifyToken, (req, res) => {
             AdopterUser.findById(req.params.id, (err, user) => {
                 if (err) return res.status(500).send(err);
                 if (!user) return res.status(404).json({ message: 'User not found' });
@@ -61,7 +78,7 @@ module.exports = (router) => {
         });
     
     router.route('/adopterUsers/:id')
-        .delete((req, res) => {
+        .delete(verifyToken, (req, res) => {
             AdopterUser.remove({ _id: req.params.id }, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(200).json({ message: 'User deleted!' });
@@ -80,7 +97,8 @@ module.exports = (router) => {
             shelterUser.password = req.body.password;
             shelterUser.save((err) => {
                 if (err) return res.status(400).send(err);
-                res.status(201).json({ message: 'Shelter user created!', user: shelterUser });
+                const token = jwt.sign({ id: shelterUser._id}, JWT_SECRET, { expiresIn: '24h' });
+                res.status(201).json({ message: 'Shelter user created!', user: shelterUser, token });
             });
         });
     
@@ -92,7 +110,8 @@ module.exports = (router) => {
                 if (user.password !== req.body.password) {
                     return res.status(401).json({ message: 'Invalid password' });
                 }
-                res.status(200).json({ message: 'Login successful', user: user });
+                const token = jwt.sign({ id: user._id}, JWT_SECRET, { expiresIn: '24h' });
+                res.status(200).json({ message: 'Login successful', user: user, token });
             });
         });
     
