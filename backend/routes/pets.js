@@ -131,7 +131,7 @@ module.exports = (router) => {
 
                 if (req.body.availability !== undefined) pet.availability = req.body.availability;
 
-                await pet.save(); 
+                await pet.save();
                 res.status(200).json({ message: 'Pet updated!', pet: pet });
             } catch (err) {
                 console.error(err);
@@ -143,7 +143,7 @@ module.exports = (router) => {
     router.route('/pets/:id')
         .delete(async (req, res) => {
             try {
-                await Pet.deleteOne({ id: req.params.id }); 
+                await Pet.deleteOne({ id: req.params.id });
                 res.status(200).json({ message: 'Pet deleted!' });
             } catch (err) {
                 console.error(err);

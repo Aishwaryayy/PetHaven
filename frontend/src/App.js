@@ -9,6 +9,7 @@ import UserProfilePage from './components/UserProfilePage/UserProfilePage.js';
 import NewPetListingPage from './components/NewPetListingPage/NewPetListingPage.js';
 import UserLoginPage from './components/UserLoginPage/UserLoginPage.js';
 import ShelterListingsPage from './components/ShelterListingsPage/ShelterListingsPage.js';
+import ShelterEditListingPage from './components/ShelterEditListingPage/ShelterEditListingPage.js';
 import Typography from '@mui/material/Typography';
 import {Navigate} from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -50,6 +51,7 @@ function App() {
         <Route path="/users/:curr_id" element={<UserProfilePage />}  />
         <Route path="/shelter/:curr_id/add_listings" element={<NewPetListingPage/>} />
         <Route path="/shelter/:curr_id/listings" element={<ShelterListingsPage/>} />
+        <Route path="/shelter/:curr_id/edit/:petId" element={<ShelterEditListingPage />} />
         <Route path="/login" element={<UserLoginPage/>}/>
     </Routes>
     </Router>

@@ -41,6 +41,19 @@ function ShelterListingsPage(){
       const matchesGender = gender === "" || pet.gender === gender;
       return matchesBreed && matchesAge && matchesGender;
     });
+    const handleDelete = async (id) => {
+      if (!window.confirm("Are you sure you want to delete this listing?")) return;
+
+      try {
+        await fetch(`${process.env.REACT_APP_API_URL}/pets/${id}`, {
+          method: "DELETE",
+        });
+
+        setPetList(prev => prev.filter(p => p.id !== id));
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
+    };
 
     return(
         <PageLayout>
@@ -99,12 +112,37 @@ function ShelterListingsPage(){
                                     size="small"
                                      onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/applications/${pet._id}`)}}
+                                        navigate(`/applications/${pet.id}`)}}
                                      color="primary">
                                     View Applications
                                   </Button>
+                                  <Stack direction="row" spacing={1}>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        navigate(`/shelter/${curr_id}/edit/${pet.id}`);
+                                      }}
+                                    >
+                                      Edit
+                                    </Button>
+
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      color="error"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleDelete(pet.id);
+                                      }}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </Stack>
                              </Stack>
                            </Stack>
+
                          </CardContent>
                        </Card>
                        </Link>
