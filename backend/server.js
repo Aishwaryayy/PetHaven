@@ -11,7 +11,7 @@ require('dotenv').config();
 var app = express();
 
 // Updated port to 5000
-var port = process.env.PORT || 5000;
+var port = process.env.PORT || 500;
 
 
 var mongoUri = process.env.MONGODB_URI;
@@ -42,4 +42,7 @@ mongoose.connect(mongoUri)
 .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
 });
+
+app.listen(port);
+console.log('Server running on port ' + port);
 
