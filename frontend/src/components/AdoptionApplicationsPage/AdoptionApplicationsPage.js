@@ -56,22 +56,28 @@ function AdoptionApplicationsPage() {
 
         {applications.map((app)=>{
             return(
-            <Accordion>
-               <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant="body1">Application {app.id}</Typography>
+            <Accordion className="accordion-container">
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} className="app-accordion-summary">
+                <div className="accordion-header">
+                  <Typography variant="body1" className="accordion-title">Application {app.id}</Typography>
+                  <Chip label={app.status} color="primary" size="small" className={`status-chip status-${app.status.toLowerCase()}`}/>
+                </div>
+              </AccordionSummary>
+              <AccordionDetails className="details-container">
+                <div className="details-info">
+                  <Typography variant="body2"><strong>Date Applied:</strong> {app.dateApplied}</Typography>
 
-               </AccordionSummary>
-               <AccordionDetails className="details-container">
+                  <Typography variant="body2"><strong>Adopter ID:</strong> {app.userId}</Typography>
+                </div>
 
-                    <Typography variant="body2">Date Applied: {app.dateApplied}</Typography>
-                    <Typography variant="body2">Adopter ID: {app.userId}</Typography>
-                     <Chip label={app.status} color="primary"></Chip>
-                     <div>
-                     <Button color="primary" className="view-button">View Adopter Profile</Button>
-                      <Button color="primary" className="issue-button">Issue a decision</Button>
-                      </div>
-               </AccordionDetails>
+                <div className="buttons-row">
+                  <Button color="primary" className="view-button">View Adopter Profile</Button>
+
+                  <Button color="primary" className="issue-button" disabled={app.status.toLowerCase()!=="pending"}>Issue a decision</Button>
+                </div>
+              </AccordionDetails>
             </Accordion>
+
             );
 
 

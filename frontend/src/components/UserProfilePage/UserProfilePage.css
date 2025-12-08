@@ -1,0 +1,31 @@
+.profile-container{
+  padding:2%;
+  margin-top:2%;
+  border-radius:0.7rem;
+}
+
+.profile-title{
+  margin-bottom:1.5%;
+  font-weight:600;
+}
+
+.profile-stack{
+  margin-top:1%;
+}
+
+.button-row{
+  display:flex;
+  gap:1%;
+  justify-content:flex-end;
+  margin-top:1%;
+}
+
+.edit-button,.save-button {
+  background-color:#271C45 !important;
+  color:white !important;
+}
+
+.cancel-button{
+  border-color:#271C45 !important;
+  color:#271C45 !important;
+}

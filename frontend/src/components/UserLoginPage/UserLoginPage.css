@@ -1,0 +1,45 @@
+.rl-container{
+width:400px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:12px;
+}
+
+.toggle-row{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.toggle-row button{
+width:48%;
+padding:10px;
+border:1px solid #aaa;
+background:#eee;
+cursor:pointer;
+border-radius:6px;
+}
+
+.toggle-row .active{
+background:#b48c8c;
+color:white;
+}
+
+input{
+width:100%;
+margin-bottom:12px;
+padding:10px;
+border-radius:6px;
+border:1px solid #aaa;
+}
+
+.submit-btn{
+width:100%;
+padding:12px;
+background:#8d4f4f;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}

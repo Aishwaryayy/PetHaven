@@ -5,6 +5,10 @@ import PetDetailsPage from './components/PetDetailsPage/PetDetailsPage.js';
 import PetListPage from './components/PetListPage/PetListPage.js';
 import UserPreferencePage from './components/UserPreferencePage/UserPreferencePage.js';
 import AdoptionApplicationsPage from './components/AdoptionApplicationsPage/AdoptionApplicationsPage.js';
+import UserProfilePage from './components/UserProfilePage/UserProfilePage.js';
+import NewPetListingPage from './components/NewPetListingPage/NewPetListingPage.js';
+import UserLoginPage from './components/UserLoginPage/UserLoginPage.js';
+import ShelterListingsPage from './components/ShelterListingsPage/ShelterListingsPage.js';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -41,6 +45,10 @@ function App() {
         <Route path="/listings/:curr_id" element={<PetDetailsPage />}  />
         <Route path="/preferences" element={<UserPreferencePage />}  />
         <Route path="/applications/:curr_id" element={<AdoptionApplicationsPage />}  />
+        <Route path="/users/:curr_id" element={<UserProfilePage />}  />
+        <Route path="/shelter/:curr_id/add_listings" element={<NewPetListingPage/>} />
+        <Route path="/shelter/:curr_id/listings" element={<ShelterListingsPage/>} />
+        <Route path="/login" element={<UserLoginPage/>}/>
     </Routes>
     </Router>
     </ThemeProvider>
