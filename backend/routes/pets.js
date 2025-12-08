@@ -1,97 +1,77 @@
 var Pet = require('../models/pet');
-
+const upload = require('../upload');
 module.exports = (router) => {
     // CREATE - POST /pets
     router.route('/pets')
-        .post(async (req, res) => {
-            try {
-                const pet = new Pet();
+        .post(upload.array('photos', 5), async (req, res) => {
+          try {
+            const pet = new Pet();
 
-                pet.id = req.body.id;
-                pet.shelterId = req.body.shelterId;
-                pet.name = req.body.name;
-                pet.species = req.body.species;
-                pet.breed = req.body.breed;
-                pet.age = req.body.age;
-                pet.gender = req.body.gender;
-                pet.size = req.body.size;
-                pet.location = req.body.location;
-                pet.thumbnail = req.body.thumbnail;
-                pet.photos = req.body.photos || [];
-                pet.profile = req.body.profile || {};
-                pet.profile.summary = req.body.profile?.summary || req.body.summary || '';
-                pet.profile.personalityTraits = req.body.profile?.personalityTraits || req.body.personalityTraits || [];
-                pet.profile.routine = req.body.profile?.routine || req.body.routine || '';
-                pet.profile.goodWithChildren =
-                    req.body.profile?.goodWithChildren !== undefined
-                        ? req.body.profile.goodWithChildren
-                        : (req.body.goodWithChildren !== undefined ? req.body.goodWithChildren : false);
-                pet.profile.goodWithDogs =
-                    req.body.profile?.goodWithDogs !== undefined
-                        ? req.body.profile.goodWithDogs
-                        : (req.body.goodWithDogs !== undefined ? req.body.goodWithDogs : false);
-                pet.profile.goodWithCats =
-                    req.body.profile?.goodWithCats !== undefined
-                        ? req.body.profile.goodWithCats
-                        : (req.body.goodWithCats !== undefined ? req.body.goodWithCats : false);
-                pet.availability = req.body.availability || 'available';
-                pet.datePosted = req.body.datePosted || new Date();
+            pet.id = req.body.id;
+            pet.shelterId = req.body.shelterId;
+            pet.name = req.body.name;
+            pet.species = req.body.species;
+            pet.breed = Array.isArray(req.body.breed) ? req.body.breed : [req.body.breed];
+            pet.age = req.body.age;
+            pet.gender = req.body.gender;
+            pet.size = req.body.size;
+            pet.location = req.body.location;
+            pet.photos = req.files ? req.files.map(file => file.path) : [];
+            pet.thumbnail = pet.photos[0] || '';
+            pet.profile = {
+              summary: req.body.profile?.summary || req.body.summary || '',
+              personalityTraits: req.body.profile?.personalityTraits || req.body.personalityTraits || [],
+              routine: req.body.profile?.routine || req.body.routine || '',
+              goodWithChildren: req.body.profile?.goodWithChildren ?? req.body.goodWithChildren ?? false,
+              goodWithDogs: req.body.profile?.goodWithDogs ?? req.body.goodWithDogs ?? false,
+              goodWithCats: req.body.profile?.goodWithCats ?? req.body.goodWithCats ?? false
+            };
+            pet.availability = req.body.availability || 'available';
+            pet.datePosted = req.body.datePosted || new Date();
 
-                await pet.save(); 
-                res.status(201).json({ message: 'Pet created!', pet: pet });
-            } catch (err) {
-                console.error(err);
-                res.status(400).send(err);
-            }
+            await pet.save();
+            res.status(201).json({ message: 'Pet created!', pet });
+          } catch (err) {
+            console.error(err);
+            res.status(400).send(err);
+          }
         });
 
-    // GET ALL - GET /pets
-    router.route('/pets')
-        .get(async (req, res) => {
-            try {
-                const query = {};
-                const preferences = req.body?.preferences || {};
 
-                // Filter by breed (array of breeds - match any)
-                if (preferences.breed && Array.isArray(preferences.breed) && preferences.breed.length > 0) {
-                    query.breed = { $in: preferences.breed };
-                }
+   router.route('/pets')
+       .get(async (req, res) => {
+           try {
+               const query = {};
+               const { breed, minAge, maxAge, gender, size, location, traits } = req.query;
 
-                // Filter by age range [min, max]
-                if (preferences.ageRange && Array.isArray(preferences.ageRange) && preferences.ageRange.length === 2) {
-                    const [minAge, maxAge] = preferences.ageRange;
-                    if (typeof minAge === 'number' && typeof maxAge === 'number') {
-                        query.age = { $gte: minAge, $lte: maxAge };
-                    }
-                }
+               if (breed) {
+                   const breeds = Array.isArray(breed) ? breed : [breed];
+                   query.breed = { $in: breeds };
+               }
 
-                // Filter by gender (skip if empty string)
-                if (preferences.gender && preferences.gender.trim() !== '') {
-                    query.gender = preferences.gender;
-                }
+               if (minAge !== undefined && maxAge !== undefined) {
+                   query.age = { $gte: Number(minAge), $lte: Number(maxAge) };
+               }
 
-                // Filter by size (skip if empty string)
-                if (preferences.size && preferences.size.trim() !== '') {
-                    query.size = preferences.size;
-                }
+               if (gender) query.gender = gender;
 
-                // Filter by location
-                if (preferences.location && preferences.location.trim() !== '') {
-                    query.location = preferences.location;
-                }
+               if (size) query.size = size;
 
-                // Filter by traits (array of traits - match any in personalityTraits)
-                if (preferences.traits && Array.isArray(preferences.traits) && preferences.traits.length > 0) {
-                    query['profile.personalityTraits'] = { $in: preferences.traits };
-                }
+               if (location) query.location = location;
 
-                const pets = await Pet.find(query); 
-                res.status(200).json(pets);
-            } catch (err) {
-                console.error(err);
-                res.status(500).send(err);
-            }
-        });
+               if (traits) {
+                   const traitArray = Array.isArray(traits) ? traits : [traits];
+                   query['profile.personalityTraits'] = { $in: traitArray };
+               }
+
+               const pets = await Pet.find(query);
+               res.status(200).json(pets);
+           } catch (err) {
+               console.error(err);
+               res.status(500).send(err);
+           }
+       });
+
 
     // GET ALL PETS BY SHELTER - GET /pets/shelter/:shelterId
     router.route('/pets/shelter/:shelterId')

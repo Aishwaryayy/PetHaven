@@ -74,13 +74,7 @@ function ShelterListingsPage(){
                     >
                       Add New Listing
                     </Button>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => navigate(`/applications/${curr_id}`)}
-                    >
-                      View Applications
-                    </Button>
+
                   </Stack>
                 </Box>
                 <Grid container spacing={3} alignItems="stretch">
@@ -100,6 +94,15 @@ function ShelterListingsPage(){
                              </Typography>
                              <Stack direction="row" spacing={1} >
                                <Chip label={pet.availability} color={pet.availability === "available" ? "success" : "default"} size="small" />
+                                 <Button
+                                    variant="outlined"
+                                    size="small"
+                                     onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/applications/${pet._id}`)}}
+                                     color="primary">
+                                    View Applications
+                                  </Button>
                              </Stack>
                            </Stack>
                          </CardContent>

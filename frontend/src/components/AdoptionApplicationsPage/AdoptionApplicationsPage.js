@@ -29,16 +29,23 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 
 function AdoptionApplicationsPage() {
     const {curr_id} = useParams();
     //console.log(curr_id);
    const [applications, setApplications] = useState([]);
+   const [openDialog, setOpenDialog] = useState(false);
+   const [selectedApp, setSelectedApp] = useState(null);
+   const [newStatus, setNewStatus] = useState("approved");
 
    const [filter, setFilter] = useState("all");
 
    useEffect(()=>{
-       fetch(`http://localhost:4000/applications?petId=${curr_id}`).then(res=>res.json()).then(data=>{
+       fetch(`${process.env.REACT_APP_API_URL}/applications?petId=${curr_id}`).then(res=>res.json()).then(data=>{
            setApplications(data);
            console.log("Application list:");
            console.log(data);
@@ -46,6 +53,41 @@ function AdoptionApplicationsPage() {
        })
    },[]);
 
+    const handleOpenDialog = (app) => {
+        setSelectedApp(app);
+        setNewStatus("approved");
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedApp(null);
+    };
+
+    const handleStatusUpdate = async () => {
+        try {
+            const res = await fetch(`http://localhost:4000/applications/${selectedApp.id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if(res.ok){
+
+                setApplications(prev => prev.map(app =>
+                    app.id === selectedApp.id ? { ...app, status: newStatus } : app
+                ));
+                handleCloseDialog();
+            } else {
+                alert(data.message || "Failed to update status");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error connecting to server");
+        }
+    };
 
 
 
@@ -73,7 +115,7 @@ function AdoptionApplicationsPage() {
                 <div className="buttons-row">
                   <Button color="primary" className="view-button">View Adopter Profile</Button>
 
-                  <Button color="primary" className="issue-button" disabled={app.status.toLowerCase()!=="pending"}>Issue a decision</Button>
+                  <Button color="primary" className="issue-button" disabled={app.status.toLowerCase()!=="pending"} onClick={() => handleOpenDialog(app)}>Issue a decision</Button>
                 </div>
               </AccordionDetails>
             </Accordion>
@@ -84,6 +126,24 @@ function AdoptionApplicationsPage() {
         })}
 
         </Stack>
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+            <DialogTitle>Update Application Status</DialogTitle>
+            <DialogContent>
+                <Select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    fullWidth
+                >
+                    <MenuItem value="approved">Approved</MenuItem>
+                    <MenuItem value="rejected">Rejected</MenuItem>
+                </Select>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleCloseDialog}>Cancel</Button>
+                <Button onClick={handleStatusUpdate} variant="contained" color="primary">Submit</Button>
+            </DialogActions>
+        </Dialog>
+
     </PageLayout>
   );
 }

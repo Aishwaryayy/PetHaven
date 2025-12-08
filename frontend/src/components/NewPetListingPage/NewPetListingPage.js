@@ -1,10 +1,9 @@
 import React from "react";
-import {useState, useEffect} from "react";
+import {useState} from "react";
 import {useParams} from "react-router-dom";
 import Header from '../Header/Header.js';
 import PageLayout from '../PageLayout/PageLayout.js';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -12,8 +11,6 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
-import { GoDotFill } from "react-icons/go";
-import { FaLocationDot } from "react-icons/fa6";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
@@ -46,6 +43,7 @@ function NewPetListingPage() {
     location: "",
     breed: [],
     photos: [],
+    previewUrls: [],
     summary: "",
     routine: "",
     goodWithChildren: false,
@@ -70,25 +68,30 @@ function NewPetListingPage() {
   const handlePhotoUpload = (e) => {
     const files = Array.from(e.target.files);
     const urls = files.map(file => URL.createObjectURL(file));
-    setPetData(prev => ({ ...prev, photos: urls }));
+    setPetData(prev => ({ ...prev, photos: files, previewUrls: urls }));
   };
 
-  const handleSubmit = () => {
-    fetch("http://localhost:4000/pets", {
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("name", petData.name);
+    formData.append("age", petData.age);
+    formData.append("gender", petData.gender);
+    formData.append("size", petData.size);
+    formData.append("location", petData.location);
+    petData.breed.forEach(b => formData.append("breed[]", b));
+    formData.append("profile[summary]", petData.summary);
+    formData.append("profile[routine]", petData.routine);
+    formData.append("profile[goodWithChildren]", petData.goodWithChildren);
+    formData.append("profile[goodWithDogs]", petData.goodWithDogs);
+    formData.append("profile[goodWithCats]", petData.goodWithCats);
+    petData.traits.forEach(t => formData.append("profile[personalityTraits][]", t));
+    petData.photos.forEach(file => formData.append("photos", file));
+
+    await fetch("http://localhost:4000/pets", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...petData,
-        profile: {
-          summary: petData.summary,
-          routine: petData.routine,
-          goodWithChildren: petData.goodWithChildren,
-          goodWithDogs: petData.goodWithDogs,
-          goodWithCats: petData.goodWithCats,
-          personalityTraits: petData.traits
-        }
-      })
-    }).then(() => alert("Pet listing created!"));
+      body: formData
+    });
+    alert("Pet listing created!");
   };
 
   return (
@@ -137,9 +140,9 @@ function NewPetListingPage() {
           <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="file-input"/>
         </div>
 
-        {petData.photos.length > 0 && (
+        {petData.previewUrls.length > 0 && (
           <Swiper modules={[Pagination, Navigation]} pagination={{ clickable: true }} navigation className="swiper-preview">
-            {petData.photos.map((photo, idx) => (
+            {petData.previewUrls.map((photo, idx) => (
               <SwiperSlide key={idx}>
                 <img src={photo} alt={`preview-${idx}`} className="preview-image" />
               </SwiperSlide>

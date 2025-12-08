@@ -18,6 +18,8 @@
 
 .form-field{
   width:100%;
+  margin-bottom:1rem !important;
+  margin-top:1rem !important;
 }
 
 .form-field-select{
@@ -47,6 +49,7 @@
   display:flex;
   flex-direction:column;
   gap:2%;
+  margin-bottom: 2% !important;
 }
 
 .file-input{

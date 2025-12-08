@@ -26,25 +26,40 @@ function PetListPage(){
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
     const preferences = location.state?.preferences || {};
-    useEffect(()=>{
-       const fetchPets = async () => {
-             try {
-               const res = await fetch(`${process.env.REACT_APP_API_URL}/pets`, {
-                 method: "POST",
-                 headers: { "Content-Type": "application/json" },
-                 body: JSON.stringify(preferences)
-               });
-               const data = await res.json();
-               setPetList(data);
-             } catch (err) {
-               console.error("Error fetching pets:", err);
-             }
-           };
-           fetchPets();
+    useEffect(() => {
+        const fetchPets = async () => {
+            try {
 
+                const queryParams = new URLSearchParams();
 
+                if (preferences.breed) {
 
-    },[preferences]);
+                    preferences.breed.forEach(b => queryParams.append("breed", b));
+                }
+                if (preferences.ageRange) {
+                    queryParams.append("minAge", preferences.ageRange[0]);
+                    queryParams.append("maxAge", preferences.ageRange[1]);
+                }
+                if (preferences.gender) queryParams.append("gender", preferences.gender);
+                if (preferences.size) queryParams.append("size", preferences.size);
+                if (preferences.location) queryParams.append("location", preferences.location);
+                if (preferences.traits) {
+                    preferences.traits.forEach(t => queryParams.append("traits", t));
+                }
+
+                const res = await fetch(`${process.env.REACT_APP_API_URL}/pets?${queryParams.toString()}`, {
+                    method: "GET",
+                });
+
+                const data = await res.json();
+                setPetList(data);
+            } catch (err) {
+                console.error("Error fetching pets:", err);
+            }
+        };
+
+        fetchPets();
+    }, [preferences]);
     const filteredPets = petList.filter((pet) => {
       const matchesBreed =breed === "" || pet.breed.toLowerCase().includes(breed.toLowerCase());
       const matchesAge = age === "" || pet.age.toString() === age;
