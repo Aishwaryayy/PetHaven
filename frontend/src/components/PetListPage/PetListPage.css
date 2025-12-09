@@ -46,13 +46,19 @@ height:20vh;
 .details-link{
     text-decoration:none;
 }
-.petlist-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+.sort-select .MuiOutlinedInput-root {
+  min-width:180px;
 }
 
-.sort-select {
-  min-width: 160px;
+.sort-select .MuiSelect-select {
+  min-height: 40px;
+  padding: 10px 14px;
+  font-size: 1rem;
 }
+.petlist-header{
+  display:flex;
+  justify-content:space-between;
+  align-items: center;
+  margin-bottom:16px;
+}
+
