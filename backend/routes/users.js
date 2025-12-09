@@ -132,6 +132,60 @@ module.exports = (router) => {
                 res.status(500).send(err);
             }
         });
-    
+        router.route('/shelterUsers')
+            .get(verifyToken, async (req, res) => {
+                try {
+                    const users = await ShelterUser.find();
+                    res.status(200).json(users);
+                } catch (err) {
+                    res.status(500).send(err);
+                }
+            });
+
+        router.route('/shelterUsers/:id')
+            .get(verifyToken, async (req, res) => {
+                try {
+                    const user = await ShelterUser.findById(req.params.id);
+                    if (!user) return res.status(404).json({ message: 'User not found' });
+                    res.status(200).json(user);
+                } catch (err) {
+                    res.status(500).send(err);
+                }
+            });
+
+        router.route('/shelterUsers/:id')
+            .put(verifyToken, async (req, res) => {
+                try {
+                    const user = await ShelterUser.findById(req.params.id);
+                    if (!user) return res.status(404).json({ message: 'User not found' });
+
+                    user.name = req.body.name || user.name;
+                    user.email = req.body.email || user.email;
+                    user.address = req.body.address || user.address;
+                    user.phone = req.body.phone || user.phone;
+                    user.website = req.body.website || user.website;
+
+                    await user.save();
+                    res.status(200).json({ message: 'User updated!', user });
+                } catch (err) {
+                    if (err.name === 'CastError') {
+                        res.status(500).send(err);
+                    } else {
+                        res.status(400).send(err);
+                    }
+                }
+            });
+
+       router.route('/adopterUsers/:id')
+         .delete(verifyToken, async (req, res) => {
+           try {
+
+             await AdopterUser.deleteOne({ _id: req.params.id });
+             res.status(200).json({ message: 'User deleted!' });
+           } catch (err) {
+             res.status(500).send(err);
+           }
+         });
+
     return router;
 }
