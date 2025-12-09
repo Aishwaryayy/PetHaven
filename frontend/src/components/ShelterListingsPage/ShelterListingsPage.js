@@ -60,7 +60,7 @@ function ShelterListingsPage(){
             alert("Error deleting listing");
           }
 
-        setPetList(prev => prev.filter(p => p.id !== id));
+
 
     };
 
@@ -123,6 +123,7 @@ function ShelterListingsPage(){
                                       size="small"
                                        onClick={(e) => {
                                           e.stopPropagation();
+                                          e.preventDefault();
                                           navigate(`/applications/${pet._id}`)}}
                                        color="primary">
                                       View Applications

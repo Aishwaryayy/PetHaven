@@ -1,0 +1,67 @@
+.accordion-container{
+    border:1px solid #e0e0e0;
+    border-radius:8px !important;
+    margin-bottom:20%;
+    overflow:hidden;
+    margin-top:10%;
+}
+
+.accordion-header{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.accordion-title{
+    font-weight:600 !important;
+}
+.status-chip{
+    margin-left:60%;
+}
+.details-container{
+    display:flex;
+    flex-direction:column;
+    padding:12px 16px !important;
+    gap: 10px;
+}
+
+.details-info{
+    display:flex;
+    flex-direction:column;
+    gap: 2%;
+}
+
+.buttons-row{
+    display:flex;
+    justify-content:flex-end;
+    gap:1%;
+    margin-top:1%;
+}
+
+.view-button{
+    background-color: #271C45 !important;
+    color: white !important;
+}
+
+.issue-button{
+    background-color: #271C45 !important;
+    color: white !important;
+}
+.status-pending {
+    background-color:#ffcc00 !important;
+    color:black !important;
+}
+
+.status-approved {
+    background-color:#4caf50 !important;
+    color:white !important;
+}
+.status-rejected {
+    background-color:#e53935 !important;
+    color:white !important;
+}
+.issue-button.Mui-disabled {
+    opacity:0.6;
+    cursor:not-allowed;
+}

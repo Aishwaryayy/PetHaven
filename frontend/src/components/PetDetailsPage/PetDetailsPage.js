@@ -27,6 +27,8 @@ function PetDetailsPage(){
     const {curr_id} = useParams();
     const navigate = useNavigate();
     const [currPet, setCurrPet] = useState("");
+    const viewerRole = localStorage.getItem("userRole");
+
     useEffect(()=>{
         fetch(`${process.env.REACT_APP_API_URL}/pets/${curr_id}`).then(res=>res.json()).then(data=>{
             setCurrPet(data);
@@ -59,7 +61,7 @@ function PetDetailsPage(){
           const data = await res.json();
           if (res.ok) {
             alert("Application submitted successfully!");
-             navigate("/listings");
+             navigate("/preferences");
           } else {
             alert(data.message || "Failed to submit application.");
           }
@@ -106,7 +108,12 @@ function PetDetailsPage(){
                     <Typography variant="body2"><strong>Good With Children:</strong>{currPet.profile.goodWithChildren ? "Yes":"No"}</Typography>
                     <Typography variant="body2"><strong>Good With Dogs:</strong>{currPet.profile.goodWithDogs?"Yes":"No"}</Typography>
                     <Typography variant="body2"><strong>Good With Cats:</strong>{currPet.profile.goodWithCats?"Yes":"No"}</Typography>
-                    <Button className="adopt-button" onClick={handleAdopt}>ADOPT ME!</Button>
+                    {viewerRole === "adopter" && currPet.availability === "available" && (
+                      <Button className="adopt-button" onClick={handleAdopt}>
+                        ADOPT ME!
+                      </Button>
+                    )}
+
 
                 </Paper>
             </Stack>

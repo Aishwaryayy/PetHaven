@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Header from "../Header/Header.js";
+import { useNavigate, useParams } from "react-router-dom";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
@@ -9,59 +8,45 @@ import TextField from "@mui/material/TextField";
 import PageLayout from "../PageLayout/PageLayout.js";
 import "./UserProfilePage.css";
 
-const API_BASE_URL = "https://pethaven-z4jb.onrender.com";
-
 function UserProfilePage() {
-  const { curr_id } = useParams(); // still there if route uses it
+  const { curr_id } = useParams();
   const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
 
-  // Try both keys just in case your app used different ones
-  const storedUserId =
-    localStorage.getItem("userId") || localStorage.getItem("userID");
-  const storedRole =
-    localStorage.getItem("userRole") || localStorage.getItem("role");
-  const token = localStorage.getItem("token");
+  const viewerRole = localStorage.getItem("userRole");
+  const viewerId = localStorage.getItem("userId");
+  const canEdit = viewerRole === "adopter" && viewerId === curr_id;
 
-  // Load user profile
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!storedUserId || !token) {
-        alert("Please login first!");
+      const token = localStorage.getItem("token");
+
+      if (!token) {
         navigate("/login");
         return;
       }
 
-      const endpoint =
-        storedRole === "shelter"
-          ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
-          : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
+      const endpoint = `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`;
 
       try {
         const res = await fetch(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch user data");
-        }
+        if (!res.ok) throw new Error();
 
         const data = await res.json();
         setUser(data);
         setFormData(data);
-      } catch (err) {
-        console.error("Error fetching user:", err);
+      } catch {
         alert("Error loading profile");
       }
     };
 
     fetchUserData();
-  }, [storedUserId, storedRole, token, navigate]);
+  }, [curr_id, navigate]);
 
   if (!user)
     return (
@@ -70,91 +55,65 @@ function UserProfilePage() {
       </PageLayout>
     );
 
-  // Save edits
   const handleSave = async () => {
-    if (!storedUserId || !token) return;
+    const token = localStorage.getItem("token");
+    const endpoint = `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`;
 
-    const endpoint =
-      storedRole === "shelter"
-        ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
-        : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
+    const res = await fetch(endpoint, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
 
-    try {
-      const res = await fetch(endpoint, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+    if (!res.ok) return;
 
-      if (!res.ok) {
-        throw new Error("Failed to save user");
-      }
+    const updated = await res.json();
+    const updatedUser = updated.user || updated;
 
-      setUser(formData);
-      setEditMode(false);
-    } catch (err) {
-      console.error("Failed to save user:", err);
-      alert("Error saving profile");
-    }
+    setUser(updatedUser);
+    setFormData(updatedUser);
+    setEditMode(false);
   };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // 🚪 Logout button
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userID");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userRole");
-    navigate("/login");
-  };
-
-  // 🗑 Delete account button
-  const handleDeleteAccount = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
+  const handleDelete = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
       return;
     }
 
-    if (!storedUserId || !token) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (!confirmDelete) return;
 
-    const endpoint =
-      storedRole === "shelter"
-        ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
-        : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
-
-    try {
-      const res = await fetch(endpoint, {
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`,
+      {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete user");
       }
+    );
 
-      // Clear auth & redirect
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userID");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userRole");
-      navigate("/login");
-    } catch (err) {
-      console.error("Failed to delete user:", err);
-      alert("Error deleting account");
+    if (!res.ok) {
+      alert("Failed to delete account");
+      return;
     }
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
+
+    navigate("/login");
   };
 
   return (
@@ -163,6 +122,7 @@ function UserProfilePage() {
         <Typography variant="h5" className="profile-title">
           User Profile – {user.name}
         </Typography>
+
         <Stack spacing={3} className="profile-stack">
           <TextField
             label="Name"
@@ -182,41 +142,17 @@ function UserProfilePage() {
             disabled={!editMode}
           />
 
-          {user.role === "shelter" && (
-            <div>
-              <TextField
-                label="Phone"
-                name="phone"
-                value={formData.phone || ""}
-                onChange={handleChange}
-                fullWidth
-                disabled={!editMode}
-              />
-              <TextField
-                label="Address"
-                name="address"
-                value={formData.address || ""}
-                onChange={handleChange}
-                fullWidth
-                disabled={!editMode}
-              />
-            </div>
-          )}
+          <TextField
+            label="Location"
+            name="location"
+            value={formData.location || ""}
+            onChange={handleChange}
+            fullWidth
+            disabled={!editMode}
+          />
 
-          {user.role === "adopter" && (
-            <TextField
-              label="Location"
-              name="location"
-              value={formData.location || ""}
-              onChange={handleChange}
-              fullWidth
-              disabled={!editMode}
-            />
-          )}
-
-          {/* Edit / Save / Cancel row */}
-          <div className="button-row">
-            {!editMode ? (
+          {canEdit && !editMode && (
+            <Stack direction="row" spacing={2}>
               <Button
                 variant="contained"
                 className="edit-button"
@@ -224,44 +160,42 @@ function UserProfilePage() {
               >
                 Edit Profile
               </Button>
-            ) : (
-              <div>
-                <Button
-                  variant="contained"
-                  className="save-button"
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleDelete}
+              >
+                Delete Account
+              </Button>
+            </Stack>
+          )}
 
-                <Button
-                  variant="outlined"
-                  className="cancel-button"
-                  onClick={() => {
-                    setFormData(user);
-                    setEditMode(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
-          </div>
+          {canEdit && editMode && (
+            <Stack direction="row" spacing={2}>
+              <Button variant="contained" className="save-button" onClick={handleSave}>
+                Save
+              </Button>
 
-          {/* NEW: Logout + Delete buttons */}
-          <div className="button-row">
-            <Button variant="outlined" onClick={handleLogout}>
-              Logout
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={handleDeleteAccount}
-              style={{ marginLeft: "1rem" }}
-            >
-              Delete Account
-            </Button>
-          </div>
+              <Button
+                variant="outlined"
+                className="cancel-button"
+                onClick={() => {
+                  setFormData(user);
+                  setEditMode(false);
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleDelete}
+              >
+                Delete Account
+              </Button>
+            </Stack>
+          )}
         </Stack>
       </Paper>
     </PageLayout>
@@ -269,3 +203,4 @@ function UserProfilePage() {
 }
 
 export default UserProfilePage;
+

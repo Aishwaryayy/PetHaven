@@ -1,30 +1,10 @@
-import React from "react";
-import {useState, useEffect} from "react";
-import {Link} from "react-router-dom";
-import Header from '../Header/Header.js';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import './AdoptionApplicationsPage.css';
-import { GoDotFill } from "react-icons/go";
-import { FaLocationDot } from "react-icons/fa6";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
-import PageLayout from '../PageLayout/PageLayout.js';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import Input from '@mui/material/Input';
-import Autocomplete from "@mui/material/Autocomplete";
-import Slider from "@mui/material/Slider";
-import {useParams} from "react-router-dom";
-import InputLabel from "@mui/material/InputLabel";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import PageLayout from "../PageLayout/PageLayout.js";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -33,120 +13,193 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-const API_BASE_URL = "https://pethaven-z4jb.onrender.com";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import "./AdoptionApplicationsPage.css";
 
 function AdoptionApplicationsPage() {
-    const {curr_id} = useParams();
-    //console.log(curr_id);
+   const { curr_id } = useParams();
+   const navigate = useNavigate();
+
    const [applications, setApplications] = useState([]);
+   const [pet, setPet] = useState(null);
+
    const [openDialog, setOpenDialog] = useState(false);
    const [selectedApp, setSelectedApp] = useState(null);
    const [newStatus, setNewStatus] = useState("approved");
 
-   const [filter, setFilter] = useState("all");
-
-   useEffect(()=>{
-       fetch(`${process.env.REACT_APP_API_URL}/applications?petId=${curr_id}`).then(res=>res.json()).then(data=>{
-           setApplications(data);
-           console.log("Application list:");
-           console.log(data);
-
+   useEffect(() => {
+     fetch(`${process.env.REACT_APP_API_URL}/applications/pet/${curr_id}`)
+       .then((res) => res.json())
+       .then((data) => {
+         setApplications(data);
        })
-   },[]);
+       .catch((err) => console.error(err));
+   }, [curr_id]);
 
-    const handleOpenDialog = (app) => {
-        setSelectedApp(app);
-        setNewStatus("approved");
-        setOpenDialog(true);
-    };
+   useEffect(() => {
+     fetch(`${process.env.REACT_APP_API_URL}/pets/${curr_id}`)
+       .then((res) => res.json())
+       .then((data) => {
+         setPet(data);
+       })
+       .catch((err) => console.error(err));
+   }, [curr_id]);
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setSelectedApp(null);
-    };
+   const handleOpenDialog = (app) => {
+     setSelectedApp(app);
+     setNewStatus("approved");
+     setOpenDialog(true);
+   };
 
-    const handleStatusUpdate = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/applications/${selectedApp.id}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-            const data = await res.json();
-            if(res.ok){
+   const handleCloseDialog = () => {
+     setOpenDialog(false);
+     setSelectedApp(null);
+   };
 
-                setApplications(prev => prev.map(app =>
-                    app.id === selectedApp.id ? { ...app, status: newStatus } : app
-                ));
-                handleCloseDialog();
-            } else {
-                alert(data.message || "Failed to update status");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error connecting to server");
-        }
-    };
+   const handleStatusUpdate = async (applicationId, status, petId) => {
+     try {
+       const res = await fetch(
+         `${process.env.REACT_APP_API_URL}/applications/${applicationId}`,
+         {
+           method: "PUT",
+           headers: {
+             "Content-Type": "application/json",
+             Authorization: `Bearer ${localStorage.getItem("token")}`,
+           },
+           body: JSON.stringify({ status }),
+         }
+       );
 
+       if (!res.ok) {
+         alert("Failed to update application status");
+         return;
+       }
 
+       if (status === "approved") {
+         const petRes = await fetch(
+           `${process.env.REACT_APP_API_URL}/pets/${petId}`,
+           {
+             method: "PUT",
+             headers: {
+               "Content-Type": "application/json",
+             },
+             body: JSON.stringify({ availability: "adopted" }),
+           }
+         );
 
-  return (
-   <PageLayout>
-        <Typography variant="h5">Adoption Applications for Pet {curr_id}</Typography>
-        <Stack spacing={3}>
+         if (petRes.ok) {
+           alert("Application approved and pet marked as adopted!");
+         }
+       } else {
+         alert("Application status updated!");
+       }
 
-        {applications.map((app)=>{
-            return(
-            <Accordion className="accordion-container">
-              <AccordionSummary expandIcon={<ExpandMoreIcon />} className="app-accordion-summary">
+       setApplications((prev) =>
+         prev.map((app) =>
+           app._id === applicationId ? { ...app, status } : app
+         )
+       );
+     } catch (err) {
+       console.error("Error updating status:", err);
+       alert("Error connecting to server");
+     }
+   };
+
+   return (
+     <PageLayout>
+       <Typography variant="h5">
+         Adoption Applications for{" "}
+         {pet ? pet.name : `Pet ${curr_id}`}
+       </Typography>
+
+      <Stack spacing={3} mt={2}>
+        {applications.length === 0 ? (
+          <Typography variant="body1">No applications yet.</Typography>
+        ) : (
+          applications.map((app) => (
+            <Accordion className="accordion-container" key={app._id}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                className="app-accordion-summary"
+              >
                 <div className="accordion-header">
-                  <Typography variant="body1" className="accordion-title">Application {app.id}</Typography>
-                  <Chip label={app.status} color="primary" size="small" className={`status-chip status-${app.status.toLowerCase()}`}/>
+                  <Typography variant="body1" className="accordion-title">
+                    Application {app._id}
+                  </Typography>
+                  <Chip
+                    label={app.status}
+                    color="primary"
+                    size="small"
+                    className={`status-chip status-${app.status.toLowerCase()}`}
+                  />
                 </div>
               </AccordionSummary>
+
               <AccordionDetails className="details-container">
                 <div className="details-info">
-                  <Typography variant="body2"><strong>Date Applied:</strong> {app.dateApplied}</Typography>
-
-                  <Typography variant="body2"><strong>Adopter ID:</strong> {app.userId}</Typography>
+                  <Typography variant="body2">
+                    <strong>Date Applied:</strong> {app.createdAt}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Adopter ID:</strong> {app.userId}
+                  </Typography>
                 </div>
 
                 <div className="buttons-row">
-                  <Button color="primary" className="view-button">View Adopter Profile</Button>
+                  <Button
+                    color="primary"
+                    className="view-button"
+                    onClick={() => navigate(`/users/${app.userId}`)}
+                  >
+                    View Adopter Profile
+                  </Button>
 
-                  <Button color="primary" className="issue-button" disabled={app.status.toLowerCase()!=="pending"} onClick={() => handleOpenDialog(app)}>Issue a decision</Button>
+                  <Button
+                    color="primary"
+                    className="issue-button"
+                    disabled={app.status.toLowerCase() !== "pending"}
+                    onClick={() => handleOpenDialog(app)}
+                  >
+                    Issue a decision
+                  </Button>
                 </div>
               </AccordionDetails>
             </Accordion>
+          ))
+        )}
+      </Stack>
 
-            );
 
-
-        })}
-
-        </Stack>
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-            <DialogTitle>Update Application Status</DialogTitle>
-            <DialogContent>
-                <Select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    fullWidth
-                >
-                    <MenuItem value="approved">Approved</MenuItem>
-                    <MenuItem value="rejected">Rejected</MenuItem>
-                </Select>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCloseDialog}>Cancel</Button>
-                <Button onClick={handleStatusUpdate} variant="contained" color="primary">Submit</Button>
-            </DialogActions>
-        </Dialog>
-
-    </PageLayout>
-  );
-}
+       <Dialog open={openDialog} onClose={handleCloseDialog}>
+         <DialogTitle>Update Application Status</DialogTitle>
+         <DialogContent>
+           <Select
+             value={newStatus}
+             onChange={(e) => setNewStatus(e.target.value)}
+             fullWidth
+           >
+             <MenuItem value="approved">Approved</MenuItem>
+             <MenuItem value="rejected">Rejected</MenuItem>
+           </Select>
+         </DialogContent>
+         <DialogActions>
+           <Button onClick={handleCloseDialog}>Cancel</Button>
+           <Button
+             variant="contained"
+             color="primary"
+             onClick={() => {
+               if (!selectedApp) return;
+               handleStatusUpdate(selectedApp._id, newStatus, selectedApp.petId || curr_id);
+               handleCloseDialog();
+             }}
+           >
+             Submit
+           </Button>
+         </DialogActions>
+       </Dialog>
+     </PageLayout>
+   );
+ }
 
 export default AdoptionApplicationsPage;
