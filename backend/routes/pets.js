@@ -1,6 +1,19 @@
 var Pet = require('../models/pet');
 const upload = require('../upload');
-const { verifyToken } = require('../middleware/auth');
+const verifyToken = (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  if (!token) return res.status(401).json({ message: 'Authorization token missing' });
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: 'Invalid token' });
+    req.user = decoded.id;
+    return next();
+  });
+};
 
 module.exports = (router) => {
 
