@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect} from "react";
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import Header from '../Header/Header.js';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -33,11 +33,11 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+const API_BASE_URL = "https://pethaven-z4jb.onrender.com";
 
 function AdoptionApplicationsPage() {
     const {curr_id} = useParams();
     //console.log(curr_id);
-    const navigate = useNavigate();
    const [applications, setApplications] = useState([]);
    const [openDialog, setOpenDialog] = useState(false);
    const [selectedApp, setSelectedApp] = useState(null);
@@ -65,44 +65,29 @@ function AdoptionApplicationsPage() {
         setSelectedApp(null);
     };
 
-    const handleStatusUpdate = async (applicationId, newStatus, petId) => {
-      try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/applications/${applicationId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({
-            status: newStatus
-          })
-        });
+    const handleStatusUpdate = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/applications/${selectedApp.id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if(res.ok){
 
-        if (!res.ok) {
-          alert("Failed to update application status");
-          return;
+                setApplications(prev => prev.map(app =>
+                    app.id === selectedApp.id ? { ...app, status: newStatus } : app
+                ));
+                handleCloseDialog();
+            } else {
+                alert(data.message || "Failed to update status");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error connecting to server");
         }
-        if (newStatus === "approved") {
-          const petRes = await fetch(`${process.env.REACT_APP_API_URL}/pets/${petId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              availability: "adopted"
-            })
-          });
-
-          if (petRes.ok) {
-            alert("Application approved and pet marked as adopted!");
-          }
-        } else {
-          alert("Application status updated!");
-        }
-      } catch (err) {
-        console.error("Error updating status:", err);
-        alert("Error connecting to server");
-      }
     };
 
 
@@ -117,21 +102,19 @@ function AdoptionApplicationsPage() {
             <Accordion className="accordion-container">
               <AccordionSummary expandIcon={<ExpandMoreIcon />} className="app-accordion-summary">
                 <div className="accordion-header">
-                  <Typography variant="body1" className="accordion-title">Application {app._id}</Typography>
+                  <Typography variant="body1" className="accordion-title">Application {app.id}</Typography>
                   <Chip label={app.status} color="primary" size="small" className={`status-chip status-${app.status.toLowerCase()}`}/>
                 </div>
               </AccordionSummary>
               <AccordionDetails className="details-container">
                 <div className="details-info">
-                  <Typography variant="body2"><strong>Date Applied:</strong> {app.createdAt}</Typography>
+                  <Typography variant="body2"><strong>Date Applied:</strong> {app.dateApplied}</Typography>
 
                   <Typography variant="body2"><strong>Adopter ID:</strong> {app.userId}</Typography>
                 </div>
 
                 <div className="buttons-row">
-                  <Button color="primary" className="view-button" onClick={()=>{
-                            navigate(`/users/${app.userId}`);
-                  }}>View Adopter Profile</Button>
+                  <Button color="primary" className="view-button">View Adopter Profile</Button>
 
                   <Button color="primary" className="issue-button" disabled={app.status.toLowerCase()!=="pending"} onClick={() => handleOpenDialog(app)}>Issue a decision</Button>
                 </div>
