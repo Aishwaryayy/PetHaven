@@ -7,7 +7,9 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PageLayout from "../PageLayout/PageLayout.js";
 import "./UserProfilePage.css";
+
 const REACT_APP_API_URL = "https://pethaven-z4jb.onrender.com";
+
 function UserProfilePage() {
   const { curr_id } = useParams();
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ function UserProfilePage() {
         return;
       }
 
-      const endpoint = `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`;
+      const endpoint = `${REACT_APP_API_URL}/adopterUsers/${curr_id}`;
 
       try {
         const res = await fetch(endpoint, {
@@ -55,9 +57,18 @@ function UserProfilePage() {
       </PageLayout>
     );
 
+  // 🚪 LOGOUT
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
   const handleSave = async () => {
     const token = localStorage.getItem("token");
-    const endpoint = `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`;
+    const endpoint = `${REACT_APP_API_URL}/adopterUsers/${curr_id}`;
 
     const res = await fetch(endpoint, {
       method: "PUT",
@@ -95,7 +106,7 @@ function UserProfilePage() {
     if (!confirmDelete) return;
 
     const res = await fetch(
-      `${process.env.REACT_APP_API_URL}/adopterUsers/${curr_id}`,
+      `${REACT_APP_API_URL}/adopterUsers/${curr_id}`,
       {
         method: "DELETE",
         headers: {
@@ -151,6 +162,7 @@ function UserProfilePage() {
             disabled={!editMode}
           />
 
+          {/* VIEW MODE: Edit + Delete + Logout */}
           {canEdit && !editMode && (
             <Stack direction="row" spacing={2}>
               <Button
@@ -160,19 +172,23 @@ function UserProfilePage() {
               >
                 Edit Profile
               </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleDelete}
-              >
+              <Button variant="outlined" color="error" onClick={handleDelete}>
                 Delete Account
+              </Button>
+              <Button variant="outlined" onClick={handleLogout}>
+                Logout
               </Button>
             </Stack>
           )}
 
+          {/* EDIT MODE: Save + Cancel + Delete + Logout */}
           {canEdit && editMode && (
             <Stack direction="row" spacing={2}>
-              <Button variant="contained" className="save-button" onClick={handleSave}>
+              <Button
+                variant="contained"
+                className="save-button"
+                onClick={handleSave}
+              >
                 Save
               </Button>
 
@@ -187,12 +203,12 @@ function UserProfilePage() {
                 Cancel
               </Button>
 
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleDelete}
-              >
+              <Button variant="outlined" color="error" onClick={handleDelete}>
                 Delete Account
+              </Button>
+
+              <Button variant="outlined" onClick={handleLogout}>
+                Logout
               </Button>
             </Stack>
           )}
@@ -203,4 +219,3 @@ function UserProfilePage() {
 }
 
 export default UserProfilePage;
-
