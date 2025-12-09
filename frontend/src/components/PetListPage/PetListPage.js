@@ -98,7 +98,7 @@ function PetListPage(){
                 <Grid container spacing={3} alignItems="stretch">
                    {filteredPets.map((pet) => (
                      <Grid item xs={12} sm={6} md={4} key={pet.id} >
-                     <Link to={`/listings/${pet.id}`} className="details-link">
+                     <Link to={`/listings/${pet._id}`} className="details-link">
                        <Card className="card-container">
                          <CardMedia component="img" height="180" image={pet.photos[0]} alt={pet.name}
                            className="card-media"/>

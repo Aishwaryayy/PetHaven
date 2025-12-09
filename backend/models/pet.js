@@ -3,11 +3,9 @@ var mongoose = require('mongoose');
 
 // Define our pet schema
 var PetSchema = new mongoose.Schema({
-    id: {type: String, required: true, unique: true},
     shelterId: {type: String, required: true},
     name: {type: String, required: true},
-    species: {type: String, required: true},
-    breed: {type: String, required: true},
+    breed: {type: [String], required: true},
     age: {type: Number, required: true},
     gender: {type: String, required: true},
     size: {type: String, required: true},

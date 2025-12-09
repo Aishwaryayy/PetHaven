@@ -1,6 +1,6 @@
 import React from "react";
 import {useState} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import Header from '../Header/Header.js';
 import PageLayout from '../PageLayout/PageLayout.js';
 import Box from '@mui/material/Box';
@@ -23,6 +23,8 @@ import "swiper/css/navigation";
 import './NewPetListingPage.css';
 
 function NewPetListingPage() {
+  const navigate = useNavigate();
+  const { curr_id } = useParams();
   const personalityOptions = [
     "Playful","Loyal","Good with kids","Intelligent","Active","Vocal",
     "High-energy","Curious","Energetic","Gentle","Calm","Quiet",
@@ -36,6 +38,8 @@ function NewPetListingPage() {
   ];
 
   const [petData, setPetData] = useState({
+    shelterId: "",
+    species: "",
     name: "",
     age: "",
     gender: "",
@@ -51,6 +55,7 @@ function NewPetListingPage() {
     goodWithCats: false,
     traits: []
   });
+
 
   const handleChange = (field, value) => {
     setPetData(prev => ({ ...prev, [field]: value }));
@@ -84,14 +89,20 @@ function NewPetListingPage() {
     formData.append("profile[goodWithChildren]", petData.goodWithChildren);
     formData.append("profile[goodWithDogs]", petData.goodWithDogs);
     formData.append("profile[goodWithCats]", petData.goodWithCats);
+    formData.append("shelterId",localStorage.getItem("shelterId"))
     petData.traits.forEach(t => formData.append("profile[personalityTraits][]", t));
     petData.photos.forEach(file => formData.append("photos", file));
 
-    await fetch("http://localhost:4000/pets", {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/pets`, {
       method: "POST",
       body: formData
     });
-    alert("Pet listing created!");
+    if (response.ok) {
+        alert("Pet listing created!");
+        navigate(`/shelter/${curr_id}/listings`);
+      } else {
+        alert("Error creating listing");
+      }
   };
 
   return (

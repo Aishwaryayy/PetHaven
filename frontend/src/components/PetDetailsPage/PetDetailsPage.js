@@ -28,7 +28,7 @@ function PetDetailsPage(){
     const navigate = useNavigate();
     const [currPet, setCurrPet] = useState("");
     useEffect(()=>{
-        fetch(`http://localhost:4000/pets/${curr_id}`).then(res=>res.json()).then(data=>{
+        fetch(`${process.env.REACT_APP_API_URL}/pets/${curr_id}`).then(res=>res.json()).then(data=>{
             setCurrPet(data);
             console.log("Pet data:");
             console.log(data);
@@ -52,7 +52,7 @@ function PetDetailsPage(){
               "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
             body: JSON.stringify({
-              petId: currPet.id,
+              petId: currPet._id,
               userId
             })
           });

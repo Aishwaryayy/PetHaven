@@ -12,37 +12,56 @@ import "./UserProfilePage.css";
 const API_BASE_URL = "https://pethaven-z4jb.onrender.com";
 
 function UserProfilePage() {
-  const { curr_id } = useParams();
+  const { curr_id } = useParams(); // still there if route uses it
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
 
+  // Try both keys just in case your app used different ones
+  const storedUserId =
+    localStorage.getItem("userId") || localStorage.getItem("userID");
+  const storedRole =
+    localStorage.getItem("userRole") || localStorage.getItem("role");
   const token = localStorage.getItem("token");
 
-  // Load current user details
+  // Load user profile
   useEffect(() => {
-    if (!token) {
-      // if somehow user reached here without being logged in
-      navigate("/login");
-      return;
-    }
+    const fetchUserData = async () => {
+      if (!storedUserId || !token) {
+        alert("Please login first!");
+        navigate("/login");
+        return;
+      }
 
-    fetch(`${API_BASE_URL}/adopterUsers/${curr_id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+      const endpoint =
+        storedRole === "shelter"
+          ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
+          : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
+
+      try {
+        const res = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await res.json();
         setUser(data);
         setFormData(data);
-      })
-      .catch((err) => {
-        console.error("Failed to load user:", err);
-      });
-  }, [curr_id, token, navigate]);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        alert("Error loading profile");
+      }
+    };
+
+    fetchUserData();
+  }, [storedUserId, storedRole, token, navigate]);
 
   if (!user)
     return (
@@ -51,38 +70,53 @@ function UserProfilePage() {
       </PageLayout>
     );
 
-  // Save profile edits
-  const handleSave = () => {
-    fetch(`${API_BASE_URL}/adopterUsers/${curr_id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setUser(formData);
-        setEditMode(false);
-      })
-      .catch((err) => console.error("Failed to save user:", err));
+  // Save edits
+  const handleSave = async () => {
+    if (!storedUserId || !token) return;
+
+    const endpoint =
+      storedRole === "shelter"
+        ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
+        : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save user");
+      }
+
+      setUser(formData);
+      setEditMode(false);
+    } catch (err) {
+      console.error("Failed to save user:", err);
+      alert("Error saving profile");
+    }
   };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // 🚪 LOGOUT
+  // 🚪 Logout button
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("userID");
     localStorage.removeItem("role");
+    localStorage.removeItem("userRole");
     navigate("/login");
   };
 
-  // 🗑 DELETE ACCOUNT
-  const handleDeleteAccount = () => {
+  // 🗑 Delete account button
+  const handleDeleteAccount = async () => {
     if (
       !window.confirm(
         "Are you sure you want to delete your account? This action cannot be undone."
@@ -91,20 +125,36 @@ function UserProfilePage() {
       return;
     }
 
-    fetch(`${API_BASE_URL}/adopterUsers/${curr_id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(() => {
-        // clear auth + send user to login/landing
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
-        navigate("/login");
-      })
-      .catch((err) => console.error("Failed to delete user:", err));
+    if (!storedUserId || !token) return;
+
+    const endpoint =
+      storedRole === "shelter"
+        ? `${API_BASE_URL}/shelterUsers/${storedUserId}`
+        : `${API_BASE_URL}/adopterUsers/${storedUserId}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      // Clear auth & redirect
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userID");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userRole");
+      navigate("/login");
+    } catch (err) {
+      console.error("Failed to delete user:", err);
+      alert("Error deleting account");
+    }
   };
 
   return (
@@ -142,7 +192,6 @@ function UserProfilePage() {
                 fullWidth
                 disabled={!editMode}
               />
-
               <TextField
                 label="Address"
                 name="address"

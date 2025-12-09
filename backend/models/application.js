@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const applicationSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true
-  },
   petId: {
     type: String,
     required: true
