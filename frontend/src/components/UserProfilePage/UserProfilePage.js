@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PageLayout from "../PageLayout/PageLayout.js";
 import "./UserProfilePage.css";
-
+const REACT_APP_API_URL = "https://pethaven-z4jb.onrender.com";
 function UserProfilePage() {
   const { curr_id } = useParams();
   const navigate = useNavigate();
