@@ -6,13 +6,13 @@ module.exports = (router) => {
     router.route('/applications')
         .post(async (req, res) => {
             try {
-                const application = new Application();
-                application.id = req.body.id;        
-                application.petId = req.body.petId;
-                application.userId = req.body.userId;
-                application.status = req.body.status || 'pending';
-                application.message = req.body.message || '';
-                application.createdAt = req.body.createdAt || new Date();
+                const application = new Application({
+                    petId: req.body.petId,
+                    userId: req.body.userId,
+                    status: req.body.status || 'pending',
+                    message: req.body.message || '',
+                    createdAt: req.body.createdAt || new Date()
+                });
 
                 await application.save();
                 res.status(201).json({ message: 'Application created!', application });
@@ -50,7 +50,7 @@ module.exports = (router) => {
     router.route('/applications/:id')
         .get(async (req, res) => {
             try {
-                const application = await Application.findOne({ id: req.params.id });
+                const application = await Application.findById(req.params.id);  // CHANGED
 
                 if (!application) {
                     return res.status(404).json({ message: 'Application not found' });
@@ -66,7 +66,7 @@ module.exports = (router) => {
     router.route('/applications/:id')
         .put(async (req, res) => {
             try {
-                const application = await Application.findOne({ id: req.params.id });
+                const application = await Application.findById(req.params.id);  // CHANGED
                 if (!application) {
                     return res.status(404).json({ message: 'Application not found' });
                 }
@@ -88,7 +88,7 @@ module.exports = (router) => {
     router.route('/applications/:id')
         .delete(async (req, res) => {
             try {
-                await Application.deleteOne({ id: req.params.id });
+                await Application.findByIdAndDelete(req.params.id);  // CHANGED
                 res.status(200).json({ message: 'Application deleted!' });
             } catch (err) {
                 console.error(err);

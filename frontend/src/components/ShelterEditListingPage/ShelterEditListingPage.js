@@ -53,6 +53,7 @@ function ShelterEditListingPage() {
     fetch(`${process.env.REACT_APP_API_URL}/pets/${petId}`)
       .then((res) => res.json())
       .then((data) => {
+
         setPetData({
           name: data.name,
           age: data.age,
@@ -116,16 +117,16 @@ function ShelterEditListingPage() {
     petData.traits.forEach((t) =>
       formData.append("profile[personalityTraits][]", t)
     );
-
+    console.log("Form data:",formData)
     petData.photos.forEach((file) => formData.append("photos", file));
-
+    console.log(petData);
     await fetch(`${process.env.REACT_APP_API_URL}/pets/${petId}`, {
       method: "PUT",
       body: formData,
     });
 
     alert("Listing updated!");
-    navigate(`/shelter/${curr_id}`);
+    navigate(`/shelter/${curr_id}/listings`);
   };
 
   return (

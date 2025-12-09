@@ -51,24 +51,40 @@ export default function UserLoginPage() {
           };
 
     try{
-      //console.log(endpoint);
+      console.log("Sending to:", endpoint);
+      console.log("Body:", body);
+
       const res=await fetch(endpoint,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(body)
       });
+
       const data=await res.json();
-      if(res.ok && data.token){
-        localStorage.setItem("userId", data.user._id);
-        localStorage.setItem("token",data.token);
+      console.log("Response:", data);
+      console.log("Status:", res.status);
+
+      if (!res.ok) {
+        alert(`Error: ${data.message || data.error || 'Registration failed'}`);
+        return;
       }
+
+      if (data.token) {
+        localStorage.setItem("userId", data.user._id);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userRole", role);
+        if (role === "shelter") {
+          localStorage.setItem("shelterId", data.user._id);
+        }
+      }
+
       if(role==="adopter"){
         navigate("/preferences");
       }
       else {
         navigate(`/shelter/${data.user._id}/listings`);
       }
-     alert(data.message);
+      alert(data.message);
     }catch(err){
       console.error("Fetch error:",err);
       alert("Error connecting to server");

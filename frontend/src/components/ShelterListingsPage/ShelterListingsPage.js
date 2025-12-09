@@ -26,7 +26,7 @@ function ShelterListingsPage(){
     const [gender, setGender] = useState("");
 
     useEffect(()=>{
-        fetch(`${process.env.REACT_APP_API_URL}/pets?shelterId=${curr_id}`)
+        fetch(`${process.env.REACT_APP_API_URL}/pets/shelter/${curr_id}`)
           .then(res=>res.json())
           .then(data=>{
             setPetList(data);
@@ -45,14 +45,23 @@ function ShelterListingsPage(){
       if (!window.confirm("Are you sure you want to delete this listing?")) return;
 
       try {
-        await fetch(`${process.env.REACT_APP_API_URL}/pets/${id}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/pets/${id}`, {
           method: "DELETE",
         });
+        if (response.ok) {
+              setPetList(prev => prev.filter(p => p._id !== id));
+              alert("Pet listing deleted successfully!");
+            }
+        else {
+              alert("Failed to delete listing");
+            }
+          } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Error deleting listing");
+          }
 
         setPetList(prev => prev.filter(p => p.id !== id));
-      } catch (err) {
-        console.error("Delete failed:", err);
-      }
+
     };
 
     return(
@@ -83,72 +92,75 @@ function ShelterListingsPage(){
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => navigate(`/shelter/${curr_id}/add_listings`)}
-                    >
+                      onClick={() => navigate(`/shelter/${curr_id}/add_listings`)}>
                       Add New Listing
                     </Button>
 
                   </Stack>
                 </Box>
-                <Grid container spacing={3} alignItems="stretch">
-                   {filteredPets.map((pet) => (
-                     <Grid item xs={12} sm={6} md={4} key={pet.id} >
-                     <Link to={`/listings/${pet.id}`} className="details-link">
-                       <Card className="card-container">
-                         <CardMedia component="img" height="180" image={pet.photos[0]} alt={pet.name} className="card-media"/>
-                         <CardContent>
-                           <Stack direction="column" spacing={2}>
-                             <Typography variant="h5" fontWeight="bold"> {pet.name} </Typography>
-                             <Typography variant="body2" color="text.secondary">
-                               {pet.breed} <GoDotFill/> {pet.age} yrs <GoDotFill/> {pet.gender}
-                             </Typography>
-                             <Typography variant="body2" color="text.secondary">
-                               <FaLocationDot /> {pet.location}
-                             </Typography>
-                             <Stack direction="row" spacing={1} >
-                               <Chip label={pet.availability} color={pet.availability === "available" ? "success" : "default"} size="small" />
-                                 <Button
-                                    variant="outlined"
-                                    size="small"
-                                     onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/applications/${pet.id}`)}}
-                                     color="primary">
-                                    View Applications
-                                  </Button>
-                                  <Stack direction="row" spacing={1}>
-                                    <Button
+                {filteredPets.length===0 ? (
+                  <Typography variant="body1">No Pets Added</Typography>
+                ) : (
+                  <Grid container spacing={3} alignItems="stretch">
+                     {filteredPets.map((pet) => (
+                       <Grid item xs={12} sm={6} md={4} key={pet.id} >
+                       <Link to={`/listings/${pet._id}`} className="details-link">
+                         <Card className="card-container">
+                           <CardMedia component="img" height="180" image={pet.photos[0]} alt={pet.name} className="card-media"/>
+                           <CardContent>
+                             <Stack direction="column" spacing={2}>
+                               <Typography variant="h5" fontWeight="bold"> {pet.name} </Typography>
+                               <Typography variant="body2" color="text.secondary">
+                                 {pet.breed} <GoDotFill/> {pet.age} yrs <GoDotFill/> {pet.gender}
+                               </Typography>
+                               <Typography variant="body2" color="text.secondary">
+                                 <FaLocationDot /> {pet.location}
+                               </Typography>
+                               <Stack direction="row" spacing={1} >
+                                 <Chip label={pet.availability} color={pet.availability === "available" ? "success" : "default"} size="small" />
+                                   <Button
                                       variant="outlined"
                                       size="small"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(`/shelter/${curr_id}/edit/${pet.id}`);
-                                      }}
-                                    >
-                                      Edit
+                                       onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/applications/${pet._id}`)}}
+                                       color="primary">
+                                      View Applications
                                     </Button>
+                                    <Stack direction="row" spacing={1}>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          navigate(`/shelter/${curr_id}/edit/${pet._id}`);
+                                        }}
+                                      >
+                                        Edit
+                                      </Button>
 
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      color="error"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        handleDelete(pet.id);
-                                      }}
-                                    >
-                                      Delete
-                                    </Button>
-                                  </Stack>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        color="error"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleDelete(pet._id);
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </Stack>
+                               </Stack>
                              </Stack>
-                           </Stack>
 
-                         </CardContent>
-                       </Card>
+                           </CardContent>
+                         </Card>
                        </Link>
                      </Grid>
                    ))}
                 </Grid>
+                )}
                 </Box>
              </Stack>
         </PageLayout>

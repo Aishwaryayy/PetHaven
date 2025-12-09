@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect} from "react";
-import {Link} from "react-router-dom";
+import {Link,useNavigate} from "react-router-dom";
 import Header from '../Header/Header.js';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -32,25 +32,54 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 function UserProfilePage() {
     const {curr_id} = useParams();
-
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [editMode, setEditMode] = useState(false);
 
     const [formData, setFormData] = useState({});
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_URL}/users/${curr_id}`)
-          .then((res) => res.json())
-          .then((data) => {
-            setUser(data);
-            setFormData(data);
-          });
+        const fetchUserData = async () => {
+            const userId = localStorage.getItem("userId");
+            const token = localStorage.getItem("token");
+            const userRole = localStorage.getItem("userRole"); // Get stored role
+
+            if (!userId || !token) {
+              alert("Please login first!");
+              navigate("/login");
+              return;
+            }
+
+            const endpoint = userRole === "adopter"
+              ? `${process.env.REACT_APP_API_URL}/adopterUsers/${userId}`
+              : `${process.env.REACT_APP_API_URL}/shelterUsers/${userId}`;
+
+            try {
+              const res = await fetch(endpoint, {
+                headers: {
+                  "Authorization": `Bearer ${token}`
+                }
+              });
+
+              if (!res.ok) {
+                throw new Error("Failed to fetch user data");
+              }
+
+              const data = await res.json();
+              setUser(data);
+            } catch (err) {
+              console.error("Error fetching user:", err);
+              alert("Error loading profile");
+            }
+          };
+
+          fetchUserData();
       }, [curr_id]);
 
     if (!user) return <PageLayout><Typography>Loading...</Typography></PageLayout>;
 
     const handleSave = () => {
-        fetch(`https://pethaven-z4jb.onrender.com/users/${curr_id}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/users/${curr_id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
