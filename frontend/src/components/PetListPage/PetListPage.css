@@ -46,3 +46,13 @@ height:20vh;
 .details-link{
     text-decoration:none;
 }
+.petlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sort-select {
+  min-width: 160px;
+}

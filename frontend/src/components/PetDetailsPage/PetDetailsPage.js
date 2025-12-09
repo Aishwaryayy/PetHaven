@@ -61,7 +61,7 @@ function PetDetailsPage(){
           const data = await res.json();
           if (res.ok) {
             alert("Application submitted successfully!");
-             navigate("/preferences");
+             navigate("/listings");
           } else {
             alert(data.message || "Failed to submit application.");
           }
