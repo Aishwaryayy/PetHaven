@@ -1,10 +1,11 @@
 var Pet = require('../models/pet');
 const upload = require('../upload');
+const { verifyToken } = require('../middleware/auth');
 
 module.exports = (router) => {
 
   router.route('/pets')
-    .post(upload.array('photos', 5), async (req, res) => {
+    .post(verifyToken, upload.array('photos', 5), async (req, res) => {
       try {
         const pet = new Pet({
           shelterId: req.body.shelterId,
@@ -27,7 +28,6 @@ module.exports = (router) => {
           availability: req.body.availability || 'available',
           datePosted: req.body.datePosted || new Date()
         });
-        console.log("New pet:",pet);
         await pet.save();
         res.status(201).json({ message: 'Pet created!', pet });
       } catch (err) {
@@ -35,7 +35,6 @@ module.exports = (router) => {
         res.status(400).send(err);
       }
     });
-
 
   router.route('/pets')
     .get(async (req, res) => {
@@ -59,7 +58,7 @@ module.exports = (router) => {
     });
 
   router.route('/pets/shelter/:shelterId')
-    .get(async (req, res) => {
+    .get(verifyToken, async (req, res) => {
       try {
         const pets = await Pet.find({ shelterId: req.params.shelterId });
         res.status(200).json(pets);
@@ -68,7 +67,6 @@ module.exports = (router) => {
         res.status(500).send(err);
       }
     });
-
 
   router.route('/pets/:id')
     .get(async (req, res) => {
@@ -82,9 +80,8 @@ module.exports = (router) => {
       }
     });
 
-
   router.route('/pets/:id')
-    .put(upload.array('photos', 5), async (req, res) => {
+    .put(verifyToken, upload.array('photos', 5), async (req, res) => {
       try {
         const pet = await Pet.findById(req.params.id);
         if (!pet) return res.status(404).json({ message: 'Pet not found' });
@@ -97,8 +94,8 @@ module.exports = (router) => {
 
         Object.assign(pet, {
           name: req.body.name ?? pet.name,
-          breed: req.body['breed[]'] ?
-            (Array.isArray(req.body['breed[]']) ? req.body['breed[]'] : [req.body['breed[]']])
+          breed: req.body['breed[]']
+            ? (Array.isArray(req.body['breed[]']) ? req.body['breed[]'] : [req.body['breed[]']])
             : pet.breed,
           age: req.body.age ?? pet.age,
           gender: req.body.gender ?? pet.gender,
@@ -130,9 +127,8 @@ module.exports = (router) => {
       }
     });
 
-
   router.route('/pets/:id')
-    .delete(async (req, res) => {
+    .delete(verifyToken, async (req, res) => {
       try {
         await Pet.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: 'Pet deleted!' });
@@ -144,4 +140,3 @@ module.exports = (router) => {
 
   return router;
 };
-
