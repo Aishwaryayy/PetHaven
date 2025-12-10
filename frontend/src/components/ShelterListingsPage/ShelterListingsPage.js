@@ -25,15 +25,33 @@ function ShelterListingsPage(){
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
 
-    useEffect(()=>{
-        fetch(`${process.env.REACT_APP_API_URL}/pets/shelter/${curr_id}`)
-          .then(res=>res.json())
-          .then(data=>{
-            setPetList(data);
-            console.log("Pet list:",data);
-          })
-          .catch(err => console.error(err));
-    },[curr_id]);
+    useEffect(() => {
+
+      const token = localStorage.getItem("token");
+
+
+      if (!token) {
+        console.error("Authorization token is missing!");
+        return;
+      }
+
+      fetch(`${process.env.REACT_APP_API_URL}/pets/shelter/${curr_id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setPetList(data);
+          console.log("Pet list:", data);
+        })
+        .catch(err => {
+          console.error("Error fetching pets:", err);
+        });
+    }, [curr_id]);
+
 
     const filteredPets = petList.filter((pet) => {
       const matchesBreed = breed === "" || pet.breed.toLowerCase().includes(breed.toLowerCase());
