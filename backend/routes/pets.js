@@ -1,5 +1,6 @@
 var Pet = require('../models/pet');
 const upload = require('../upload');
+var jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
   if (req.method === 'OPTIONS') {
     return next();
