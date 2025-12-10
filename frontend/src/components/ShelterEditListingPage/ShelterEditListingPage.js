@@ -53,7 +53,6 @@ function ShelterEditListingPage() {
     fetch(`${process.env.REACT_APP_API_URL}/pets/${petId}`)
       .then((res) => res.json())
       .then((data) => {
-
         setPetData({
           name: data.name,
           age: data.age,
@@ -117,12 +116,15 @@ function ShelterEditListingPage() {
     petData.traits.forEach((t) =>
       formData.append("profile[personalityTraits][]", t)
     );
-    console.log("Form data:",formData)
+
     petData.photos.forEach((file) => formData.append("photos", file));
-    console.log(petData);
+
     await fetch(`${process.env.REACT_APP_API_URL}/pets/${petId}`, {
       method: "PUT",
-      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: formData
     });
 
     alert("Listing updated!");
@@ -247,6 +249,7 @@ function ShelterEditListingPage() {
           <Typography variant="body1" className="section-title">
             Personality Traits
           </Typography>
+
           <Stack direction="row" flexWrap="wrap">
             {personalityOptions.map((trait, idx) => (
               <Chip
@@ -254,9 +257,7 @@ function ShelterEditListingPage() {
                 label={trait}
                 clickable
                 color="primary"
-                variant={
-                  petData.traits.includes(trait) ? "filled" : "outlined"
-                }
+                variant={petData.traits.includes(trait) ? "filled" : "outlined"}
                 onClick={() => handleTraitToggle(trait)}
                 className="chip"
               />

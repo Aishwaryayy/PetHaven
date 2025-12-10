@@ -18,100 +18,109 @@ import MenuItem from "@mui/material/MenuItem";
 import "./AdoptionApplicationsPage.css";
 
 function AdoptionApplicationsPage() {
-   const { curr_id } = useParams();
-   const navigate = useNavigate();
+  const { curr_id } = useParams();
+  const navigate = useNavigate();
 
-   const [applications, setApplications] = useState([]);
-   const [pet, setPet] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [pet, setPet] = useState(null);
 
-   const [openDialog, setOpenDialog] = useState(false);
-   const [selectedApp, setSelectedApp] = useState(null);
-   const [newStatus, setNewStatus] = useState("approved");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [newStatus, setNewStatus] = useState("approved");
 
-   useEffect(() => {
-     fetch(`${process.env.REACT_APP_API_URL}/applications/pet/${curr_id}`)
-       .then((res) => res.json())
-       .then((data) => {
-         setApplications(data);
-       })
-       .catch((err) => console.error(err));
-   }, [curr_id]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-   useEffect(() => {
-     fetch(`${process.env.REACT_APP_API_URL}/pets/${curr_id}`)
-       .then((res) => res.json())
-       .then((data) => {
-         setPet(data);
-       })
-       .catch((err) => console.error(err));
-   }, [curr_id]);
+    fetch(`${process.env.REACT_APP_API_URL}/applications/pet/${curr_id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setApplications(data);
+      })
+      .catch((err) => console.error(err));
+  }, [curr_id, navigate]);
 
-   const handleOpenDialog = (app) => {
-     setSelectedApp(app);
-     setNewStatus("approved");
-     setOpenDialog(true);
-   };
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/pets/${curr_id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPet(data);
+      })
+      .catch((err) => console.error(err));
+  }, [curr_id]);
 
-   const handleCloseDialog = () => {
-     setOpenDialog(false);
-     setSelectedApp(null);
-   };
+  const handleOpenDialog = (app) => {
+    setSelectedApp(app);
+    setNewStatus("approved");
+    setOpenDialog(true);
+  };
 
-   const handleStatusUpdate = async (applicationId, status, petId) => {
-     try {
-       const res = await fetch(
-         `${process.env.REACT_APP_API_URL}/applications/${applicationId}`,
-         {
-           method: "PUT",
-           headers: {
-             "Content-Type": "application/json",
-             Authorization: `Bearer ${localStorage.getItem("token")}`,
-           },
-           body: JSON.stringify({ status }),
-         }
-       );
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedApp(null);
+  };
 
-       if (!res.ok) {
-         alert("Failed to update application status");
-         return;
-       }
+  const handleStatusUpdate = async (applicationId, status, petId) => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/applications/${applicationId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status }),
+        }
+      );
 
-       if (status === "approved") {
-         const petRes = await fetch(
-           `${process.env.REACT_APP_API_URL}/pets/${petId}`,
-           {
-             method: "PUT",
-             headers: {
-               "Content-Type": "application/json",
-             },
-             body: JSON.stringify({ availability: "adopted" }),
-           }
-         );
+      if (!res.ok) {
+        alert("Failed to update application status");
+        return;
+      }
 
-         if (petRes.ok) {
-           alert("Application approved and pet marked as adopted!");
-         }
-       } else {
-         alert("Application status updated!");
-       }
+      if (status === "approved") {
+        const petRes = await fetch(
+          `${process.env.REACT_APP_API_URL}/pets/${petId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ availability: "adopted" }),
+          }
+        );
 
-       setApplications((prev) =>
-         prev.map((app) =>
-           app._id === applicationId ? { ...app, status } : app
-         )
-       );
-     } catch (err) {
-       console.error("Error updating status:", err);
-       alert("Error connecting to server");
-     }
-   };
+        if (petRes.ok) {
+          alert("Application approved and pet marked as adopted!");
+        }
+      } else {
+        alert("Application status updated!");
+      }
 
-   return (
-     <PageLayout>
-       <Typography variant="h5">
-         Adoption Applications for{" "}
-         {pet ? pet.name : `Pet ${curr_id}`}
-       </Typography>
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === applicationId ? { ...app, status } : app
+        )
+      );
+    } catch (err) {
+      console.error("Error updating status:", err);
+      alert("Error connecting to server");
+    }
+  };
+
+  return (
+    <PageLayout>
+      <Typography variant="h5">
+        Adoption Applications for {pet ? pet.name : `Pet ${curr_id}`}
+      </Typography>
 
       <Stack spacing={3} mt={2}>
         {applications.length === 0 ? (
@@ -170,36 +179,39 @@ function AdoptionApplicationsPage() {
         )}
       </Stack>
 
-
-       <Dialog open={openDialog} onClose={handleCloseDialog}>
-         <DialogTitle>Update Application Status</DialogTitle>
-         <DialogContent>
-           <Select
-             value={newStatus}
-             onChange={(e) => setNewStatus(e.target.value)}
-             fullWidth
-           >
-             <MenuItem value="approved">Approved</MenuItem>
-             <MenuItem value="rejected">Rejected</MenuItem>
-           </Select>
-         </DialogContent>
-         <DialogActions>
-           <Button onClick={handleCloseDialog}>Cancel</Button>
-           <Button
-             variant="contained"
-             color="primary"
-             onClick={() => {
-               if (!selectedApp) return;
-               handleStatusUpdate(selectedApp._id, newStatus, selectedApp.petId || curr_id);
-               handleCloseDialog();
-             }}
-           >
-             Submit
-           </Button>
-         </DialogActions>
-       </Dialog>
-     </PageLayout>
-   );
- }
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Update Application Status</DialogTitle>
+        <DialogContent>
+          <Select
+            value={newStatus}
+            onChange={(e) => setNewStatus(e.target.value)}
+            fullWidth
+          >
+            <MenuItem value="approved">Approved</MenuItem>
+            <MenuItem value="rejected">Rejected</MenuItem>
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (!selectedApp) return;
+              handleStatusUpdate(
+                selectedApp._id,
+                newStatus,
+                selectedApp.petId || curr_id
+              );
+              handleCloseDialog();
+            }}
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </PageLayout>
+  );
+}
 
 export default AdoptionApplicationsPage;

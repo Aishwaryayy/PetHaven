@@ -46,12 +46,12 @@ function MyApplicationsPage() {
 
         const appsWithPets = await Promise.all(
           data.map(async (app) => {
-            // If backend already populated, app.petId will be an object
+
             if (app.petId && typeof app.petId === "object") {
               return { ...app, pet: app.petId };
             }
 
-            // If it's just an ID string, fetch the pet details
+
             if (app.petId && typeof app.petId === "string") {
               try {
                 const petRes = await fetch(
